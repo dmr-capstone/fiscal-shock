@@ -1,4 +1,4 @@
-# Team 10 - DMR Capstone
+# Team 12 - DMR Capstone
 ## Information
 This is the capstone repository of Team 10, Spring 2020.
 ## Cloning

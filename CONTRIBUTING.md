@@ -13,3 +13,5 @@ Please prefix branches with feature or bugfix.
     - Use camelCase for any functions, variables, or other identifiers that do not fall into the previous two categories.
 ## Editing
 Feel free to use any text editor or IDE that you like, but please look up the gitignore file for your preferred editor. You can find different gitignore setups for different editors at the following link: https://gitignore.io/
+## Pull Requests
+Pull requests are required for all merges to master. At least two reviewer approvals are required in order to merge into master. Please add functional validation tests so that we know what specifically we are trying to test when we are reviewing PRs and ensuring that they won't break something else.
