@@ -11,6 +11,7 @@ Due to Unity's tedious nature with git control and script editing with outside e
 1. Open the project in Unity FIRST.
 2. From Unity, go to the assets and bring up the context menu by right clicking on a C# script inside the folder. Click on "Open C# Project".
 3. The project will open in the text editor that you configured when you first set up Unity for scripting. Depending on your editor, you may not see certain files relevant to your project. You may have to go into your settings and turn off file exclusion for certain files. In our Google Drive, I have added a link to an example settings.json file exclusion settings inside of the VSCode FAQs file (Working -> Dev Environment -> VSCode FAQs).
+
 The reason I recommend this course of action is because you may accidentally end up ignoring the .gitignore file inside the editor, which we may need to edit often as we get a hang of this project.
 
 Additionally, if you are using Visual Studio Code, please ensure that you add the following line to the .csproj file that is generated the first time you open the project through Unity:
