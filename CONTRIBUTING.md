@@ -4,7 +4,7 @@ The following are the rules of contribution. Please follow them, as they will ma
 ## Branches
 Push to master has been disabled, so you should not be able to push your code directly to the master branch, even via force push. All new code should be written inside of a branch. While it is not necessary, it would be helpful if you prefaced branch names with "feature/" or "bugfix/". 
 
-Unless you are helping another team member, don't work on the same branch as someone else. If you do work on the same branch as someone, make sure you have their permission and the latest code from that branch, preferrably by asking the other team member to push any finished code to the remote repository.
+Unless you are helping another team member, don't work on the same branch as someone else. If you do work on the same branch as someone, make sure you have their permission and the latest code from that branch, preferably by asking the other team member to push any finished code to the remote repository.
 
 ## Formatting
 - Blocks of code should be formatted so that each nested block is tabbed forward another set of spaces.
@@ -33,8 +33,15 @@ If at all possible, please try to use the tips above to automate pull requests a
 
 ## Other Git Tips
 - Make sure you have the latest code by pulling using `git pull`.
-- You can temporarily save work without commiting using `git stash`.
-    - If you have no idea what you last had on the stash, make sure to clear it using `git stash clear`.
+- You can temporarily save work without committing using `git stash`.
+    - `git stash list` enumerates your current stash
+    - `git stash show` shows a difference of the stashed changeset
+    - `git stash pop` pops off the most recently stashed changeset; will optionally take a stack number to bypass stack behavior
+    - `git stash clear` will clear all stashed changesets
+    - `git stash apply` applies the most recently stashed changeset without clearing it from the stash
+    - More information on using the stash can be found at https://git-scm.com/docs/git-stash.
 - Be careful with merge conflicts. If you have no idea how to handle them, ask for help. There's a lot of mistakes that can be made if someone isn't careful with conflict remediation.
 - If you need to work from features in another person's branch, branch off their branch by switching to their branch using `git checkout BRANCH_NAME` and running `git checkout -b NEW_BRANCH_NAME`, which will create a new branch with the given name based off the branch you were just in. As stated above, don't work in another person's branch if it isn't necessary.
+    - If you accidentally commit to master, you can branch off of those changes and reset master using `git reset origin --hard`. Try not to commit to master.
+- `git cherry-pick [revision hash]` lets you steal a commit from another branch if you accidentally commit to the wrong branch, but you'll still need to clean up any merge conflicts or other situations that occur.
 - Git is very powerful. Dr. Siy was not joking with that picture of the multi-use gun from the first day of class. Therefore, don't be afraid to ask questions from those more experienced. Also, the following link contains some helpful beginner information for git: https://rogerdudler.github.io/git-guide/.
