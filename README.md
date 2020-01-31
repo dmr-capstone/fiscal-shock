@@ -1,7 +1,7 @@
 # Team 12 - DMR Capstone
 
 ## Information
-This is the capstone repository of Team 12, Spring 2020.
+This is the capstone repository of Team 12, Spring 2020. Please use Unity 2019.3 for editing.
 
 ## Cloning
 Please make sure to have your login information available when you clone the repository. It will ask you to login.
