@@ -14,13 +14,15 @@ Due to Unity's tedious nature with git control and script editing with outside e
 
 The reason I recommend this course of action is because you may accidentally end up ignoring the .gitignore file inside the editor, which we may need to edit often as we get a hang of this project.
 
-Additionally, if you are using Visual Studio Code, please ensure that you add the following line to the .csproj file that is generated the first time you open the project through Unity:
+Additionally, if you are using Visual Studio Code, please ensure that you add the following line to the .csproj file that is generated the first time you open the project through Unity and that you remove any broken references to ItemGroups in that file if they exist:
 ```xml
 <PropertyGroup>
     <CodeAnalysisRuleSet>./roslynator.ruleset</CodeAnalysisRuleSet>
 </PropertyGroup>
 ```
 This may also work for other IDEs or text editors, but I am not really sure. If anyone decides to go with a different approach and successfully gets code analysis working, please add to the code analysis file under Working -> Dev Environment.
+
+**Beware**: Opening with Open C# Project after the first time will replace your .csproj file with the default. Instead, just click on the script you want to change it.
 
 ## Contributing
 Please read the information in CONTRIBUTING.md before putting in a pull request. If you do not follow the rules, your build may fail and your pull request will be delayed until your contribution follows the rules.
