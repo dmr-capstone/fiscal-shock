@@ -293,7 +293,6 @@ namespace FiscalShock.GraphUtils {
 
     public class Delaunay {
         public List<Vector2> delaunayPoints;
-        private Edge baseLine;  // basel
 
         /// <summary>
         /// G&S, p. 113
@@ -330,7 +329,7 @@ namespace FiscalShock.GraphUtils {
 
         /// <summary>
         ///
-        /// </summary>
+        /// </summary>c#
         /// <param name="points"></param>
         public Delaunay(List<Vector2> points) {
             // Sort the input list by x, then y
@@ -338,16 +337,16 @@ namespace FiscalShock.GraphUtils {
         }
 
         private List<Edge> triangulate(List<Vector2> points) {
-            uint numPoints = points.Count;
+            Edge baseLine;  // basel is updated during this function so it should be local
 
-            if (numPoints == 2) {
+            if (points.Count == 2) {
                 // Only two points, so make an edge from points[0] to points[1]
                 // a = make edge;
                 Edge a;
                 a.tail = points[0];
                 a.head = points[1];
                 return (new List<Edge> { a, a.symmetric() });
-            } else if (numPoints == 3) {
+            } else if (points.Count == 3) {
                 // Connect (a) points[0] to points[1] and (b) points[1] to points[2]
                 Edge a, b;
                 QuadEdge.splice(a.symmetric(), b);
@@ -366,34 +365,51 @@ namespace FiscalShock.GraphUtils {
                 }
             } else {  // divide-and-conquer
                 // split into L and R
-                // call triangulate on both sides to get ldo, ldi and rdi, rdo (left [d?] inner and outer, etc. - what do they mean)
+                uint leftHalfEnd = (points.Count & 1 == 1)?  // if odd, ceil
+                                       points.Count/2 + 1 : points.Count/2;
+                List<Vector2> leftHalf = points.GetRange(0, leftHalfEnd);
+                List<Vector2> rightHalf = points.GetRange(leftHalfEnd + 1, points.Count);
+                List<Edge> ld = triangulate(leftHalf);  // ld[0] = ldo, ld[1] = ldi
+                List<Edge> rd = triangulate(rightHalf);  // rd[0] = rdo, rd[1] = rdi
 
-                // DO [loop?]
-                if (leftOf(rdi.tail, ldi)) {
-                    ldi = ldi.nextFromLeft();
-                } else if (rightOf(ldi.tail, rdi)) {
-                    rdi = rdi.prevFromRight();
-                } else {  // ...?
-                    // exit, no known DT maybe?
+                bool foundTangent = false;
+                while (!foundTangent) {
+                    if (leftOf(rd[1].tail, ld[1])) {
+                        ld[1] = ld[1].nextFromLeft();
+                    } else if (rightOf(ld[1].tail, rd[1])) {
+                        rd[1] = rd[1].prevFromRight();
+                    } else {
+                        foundTangent = true;  // stop looking, lower common tangent found
+                    }
                 }
 
-                // merge loop? what are the loop conditions, man
-                leftCandidate = findCandidate(true);
-                rightCandidate = findCandidate(false);
-
-                if (!isEdgeValid(leftCandidate) && !isEdgeValid(rightCandidate)) {
-                    // exit, "basel is upper common tangent," no known DT?
+                // Set up the initial basel and update weird ldo/rdo
+                baseLine = QuadEdge.connect(rd[1].symmetric(), ld[1]);
+                if (ld[1].tail == ld[0].tail) {
+                    ld[0] = baseLine.symmetric();
+                }
+                if (rd[1].tail == rd[0].tail) {
+                    rd[0] = baseLine;
                 }
 
-                if (!isEdgeValid(leftCandidate)
-                   || (isEdgeValid(rightCandidate) && inCircle(leftCandidate.head, leftCandidate.tail, rightCandidate.tail, rightCandidate.head))) {
-                    // Add cross edge basel from rcand.Dest to basel.Dest
-                    baseLine = QuadEdge.connect(rightCandidate, baseLine.symmetric());
-                } else { // pick lcand
-                    baseLine = QuadEdge.connect(baseLine.symmetric(), leftCandidate.symmetric());
+                foundTangent = false;
+                while (!foundTangent) {
+                    leftCandidate = findCandidate(true);
+                    rightCandidate = findCandidate(false);
+
+                    if (!isEdgeValid(leftCandidate) && !isEdgeValid(rightCandidate)) {
+                        foundTangent = true;  // upper common tangent found
+                    }
+
+                    if (!isEdgeValid(leftCandidate)
+                       || (isEdgeValid(rightCandidate) && inCircle(leftCandidate.head, leftCandidate.tail, rightCandidate.tail, rightCandidate.head))) {
+                        // Add cross edge basel from rcand.Dest to basel.Dest
+                        baseLine = QuadEdge.connect(rightCandidate, baseLine.symmetric());
+                    } else { // pick lcand
+                        baseLine = QuadEdge.connect(baseLine.symmetric(), leftCandidate.symmetric());
+                    }
                 }
-                // end merge loop
-                // return ldo, rdo (what??)
+                return new List<Edge> { ld[0], rd[0] };
             }
         }
 
