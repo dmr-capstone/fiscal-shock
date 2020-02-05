@@ -56,8 +56,9 @@ namespace ThirdParty {
 
         public MersenneTwister(int[] init) {
             uint[] initArray = new uint[init.Length];
-            for (int i = 0; i < init.Length; ++i)
-            initArray[i] = (uint)init[i];
+            for (int i = 0; i < init.Length; ++i) {
+                initArray[i] = (uint)init[i];
+            }
             init_by_array(initArray, (uint)initArray.Length);
         }
 
@@ -125,8 +126,9 @@ namespace ThirdParty {
 
         public void Initialize(int[] init) {
             uint[] initArray = new uint[init.Length];
-            for (int i = 0; i < init.Length; ++i)
-            initArray[i] = (uint)init[i];
+            for (int i = 0; i < init.Length; ++i) {
+                initArray[i] = (uint)init[i];
+            }
             init_by_array(initArray, (uint)initArray.Length);
         }
 
