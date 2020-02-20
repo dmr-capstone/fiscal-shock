@@ -1,12 +1,24 @@
 fileFormatVersion: 2
-guid: af49e7ee9c2b67f4885e43e1be9e1108
+guid: 716649df03aff22408b3c6c0fd2a47bd
 ModelImporter:
   serializedVersion: 19300
-  internalIDToNameTable:
+  internalIDToNameTable: []
+  externalObjects:
   - first:
-      74: 2264077025236624520
-    second: Armature.001|Armature.001Action
-  externalObjects: {}
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Black rubber
+    second: {fileID: 2100000, guid: 4956be4b030793f4f911ef8b7313b0b0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal grid
+    second: {fileID: 2100000, guid: 43af0bf1e20ef1c4bb6c883d2c642cd2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Orange plastic
+    second: {fileID: 2100000, guid: 3112b3e3fe0aeec409090d55a623b43d, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0

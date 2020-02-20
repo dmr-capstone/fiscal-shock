@@ -1,15 +1,42 @@
 fileFormatVersion: 2
-guid: 1ebb55e2f7210db48aafc3dd6b8186d0
+guid: 68dfd1e59ea95164385a2bf2710766ed
 ModelImporter:
   serializedVersion: 19300
   internalIDToNameTable:
   - first:
-      74: -4799524434163024911
-    second: Armature|walk
+      74: -251351218608039746
+    second: Armature|attack
   - first:
-      74: 3689653395864200229
-    second: Armature|WALKING
-  externalObjects: {}
+      74: -4555645498652345093
+    second: Armature|die1
+  - first:
+      74: 224102537332072604
+    second: Armature|die2
+  - first:
+      74: 7343265044682769361
+    second: Armature|die3
+  - first:
+      74: -1978303741906493279
+    second: Armature|idle
+  - first:
+      74: 2845759425010373711
+    second: Armature|move
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Black rubber
+    second: {fileID: 2100000, guid: e4410b07990c55c44b53cc76cc595d4a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal grid
+    second: {fileID: 2100000, guid: 986ed92b0febac444bacf1d47e49c46e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Orange plastic
+    second: {fileID: 2100000, guid: bdae874caaeaa2a4aa5e9824cb81ddf3, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
