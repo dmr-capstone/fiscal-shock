@@ -43,6 +43,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   bulletSpeed: 1800
+  target: {fileID: 0}
+  rb: {fileID: 3261233909857439722}
+  player: {fileID: 0}
+  poolProjectiles: 0
+  poolSize: 0
 --- !u!1001 &6969074340489114623
 PrefabInstance:
   m_ObjectHideFlags: 0

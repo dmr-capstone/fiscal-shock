@@ -337,6 +337,7 @@ MonoBehaviour:
   missile: 0
   bulletPrefab: {fileID: 3815249681377447051, guid: cacd24e6fa856834b8ae25144e1213d5,
     type: 3}
+  showCrosshair: 1
 --- !u!1 &7624205853972234779
 GameObject:
   m_ObjectHideFlags: 0
@@ -348,12 +349,12 @@ GameObject:
   - component: {fileID: 6887630062639575048}
   - component: {fileID: 4547384456998383511}
   m_Layer: 0
-  m_Name: MissleLauncher
+  m_Name: MissileLauncher
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6887630062639575048
 Transform:
   m_ObjectHideFlags: 0
@@ -361,8 +362,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7624205853972234779}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.53, y: 2.05, z: -8.18187}
+  m_LocalRotation: {x: 0.44133458, y: 0.06868685, z: -0.034602404, w: 0.89404064}
+  m_LocalPosition: {x: 2.343557, y: 1.3556845, z: 81.74007}
   m_LocalScale: {x: 0.18, y: 0.18, z: 0.21}
   m_Children:
   - {fileID: 8314354212765796454}
@@ -392,3 +393,4 @@ MonoBehaviour:
   missile: 1
   bulletPrefab: {fileID: 6968642178780635194, guid: 72eecee5768406a40b01125b8161bff6,
     type: 3}
+  showCrosshair: 1
