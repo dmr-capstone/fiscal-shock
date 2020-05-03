@@ -19,3 +19,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+While the algorithms and code in this project are licensed under MIT, it should
+be noted that Unity libraries have their own proprietary licensing, and users 
+should proceed with caution if they plan on using Unity owned structures and 
+the other Unity proprietary code of this project for a commercial project. 
+You can read more about Unity licensing at https://unity3d.com/legal/terms-of-service
