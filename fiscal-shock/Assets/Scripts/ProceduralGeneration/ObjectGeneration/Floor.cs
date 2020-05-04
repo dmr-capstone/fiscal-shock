@@ -8,6 +8,11 @@ namespace FiscalShock.Procedural {
     /// Creates the flat floor of a dungeon level.
     /// </summary>
     public static class Floor {
+        /// <summary>
+        /// Main function to create a square floor that reasonably covers the
+        /// playable area.
+        /// </summary>
+        /// <param name="d"></param>
         public static void setFloor(Dungeoneer d) {
             Debug.Log("Spawning floor");
             IEnumerable<Vertex> vs = d.roomVoronoi.SelectMany(r => r.vertices);
