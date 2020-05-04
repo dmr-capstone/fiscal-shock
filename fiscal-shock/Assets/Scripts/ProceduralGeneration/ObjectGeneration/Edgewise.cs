@@ -5,7 +5,17 @@ using System;
 using System.Linq;
 
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Spawns objects along a graph's edges. Currently used to lay minecart
+    /// tracks along the spanning tree in the mines.
+    /// </summary>
     public static class Edgewise {
+        /// <summary>
+        /// Generate the selected prefab along the specified graph's edges
+        /// </summary>
+        /// <param name="d">reference to Dungeoneer</param>
+        /// <param name="edges">list of edges to spawn things on</param>
+        /// <param name="thing">thing to spawn</param>
         public static void generateOnEdges(Dungeoneer d, List<Edge> edges, GameObject thing) {
             float thingLength = thing.GetComponentInChildren<Renderer>().bounds.size.x;
             foreach (Edge e in edges) {

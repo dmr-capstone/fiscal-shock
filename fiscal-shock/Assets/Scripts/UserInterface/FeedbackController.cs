@@ -5,19 +5,49 @@ using TMPro;
 using UnityEngine.UI;
 
 /// <summary>
-/// A script the was made to manage creating the clone objects for feedback.
+/// Manages visual feedback of money gain/loss by displaying numbers on the
+/// screen when certain events happen.
 /// </summary>
 public class FeedbackController : MonoBehaviour
 {
+    /// <summary>
+    /// Object pool for the money loss (spent a bullet) feedback
+    /// </summary>
     private Queue<TextMeshProUGUI> shotLosses { get; } = new Queue<TextMeshProUGUI>();
+
+    /// <summary>
+    /// Maximum number of shot loss feedback objects to display at once; also
+    /// the size of the object pool. Should be high enough for automatic weapons
+    /// that can fire once per frame, with the game capped at 60 FPS.
+    /// </summary>
     private int numLossesToDisplay = 60;
+
+    /// <summary>
+    /// Object pool for money gain (defeated an enemy) feedback
+    /// </summary>
     private Queue<TextMeshProUGUI> earns { get; } = new Queue<TextMeshProUGUI>();
+
+    /// <summary>
+    /// Maximum number of money gain feedback objects to display at once; also
+    /// the size of the object pool. Should be high enough for most situations.
+    /// Consider how many enemies the player might defeat at once, or within
+    /// 2 seconds.
+    /// </summary>
     private int numEarnsToDisplay = 16;
+
+    [Tooltip("Reference to the money loss text object to be cloned")]
     public TextMeshProUGUI shotLoss;
+
+    [Tooltip("Reference to the money gain text object to be cloned")]
     public TextMeshProUGUI earn;
+
+    [Tooltip("Reference to the HUD hit vignette")]
     public Image hitVignette;
 
-    public void Start() {
+    /// <summary>
+    /// Create object pools
+    /// </summary>
+    private void Start() {
         for (int i = 0; i < numLossesToDisplay; ++i) {
             TextMeshProUGUI sh = Instantiate(shotLoss);
             sh.transform.SetParent(transform);
@@ -49,7 +79,8 @@ public class FeedbackController : MonoBehaviour
     }
 
     /// <summary>
-    /// Creates the feedback on the screen for money gained from killing enemies.
+    /// Creates the feedback on the screen for money gained from killing
+    /// enemies.
     /// </summary>
     /// <param name="amount"></param>
     public void profit(float amount) {
@@ -65,7 +96,7 @@ public class FeedbackController : MonoBehaviour
     }
 
     /// <summary>
-    /// Coroutine to time out the created clones.
+    /// Asynchronous function to fade the text objects over time.
     /// </summary>
     /// <param name="text"></param>
     /// <param name="duration"></param>

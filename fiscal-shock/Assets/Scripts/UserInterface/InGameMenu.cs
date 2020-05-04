@@ -5,29 +5,81 @@ using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 
+/// <summary>
+/// In-game/pause menu. Controls the settings, including graphics, audio,
+/// and mouse sensitivity.
+/// </summary>
 public class InGameMenu : MonoBehaviour {
+    /// <summary>
+    /// Singleton instance
+    /// </summary>
     public static InGameMenu inGameMenuInstance { get; private set; }
+
+    [Tooltip("Reference to the pause menu background image")]
     public GameObject background;
+
+    [Tooltip("Reference to the main pause menu shown when the player first pauses")]
     public GameObject pausePanel;
+
+    [Tooltip("Reference to the player inventory panel")]
     public GameObject inventoryPanel;
+
+    [Tooltip("Reference to the options panel")]
     public GameObject optionsPanel;
+
+    [Tooltip("Reference to the quit confirmation panel")]
     public GameObject quitPanel;
+
+    [Tooltip("Reference to the graphics settings panel")]
     public GameObject graphicsPanel;
+
+    [Tooltip("Reference to the credit rating bar")]
     public GameObject creditBar;
+
+    /// <summary>
+    /// List of all panels the in game menu should handle. Used to make
+    /// it easier to turn them on/off.
+    /// </summary>
     private List<GameObject> panels { get; } = new List<GameObject>();
+
+    /// <summary>
+    /// Reference to the player.
+    /// </summary>
     public GameObject player { get; set; }
+
+    [Tooltip("Reference to the text displayed when the game is paused")]
     public TextMeshProUGUI pauseText;
+
+    /// <summary>
+    /// Reference to all volume controllers in play. Volume controllers are
+    /// used to synchronize music player volume to the settings volume.
+    /// </summary>
     private VolumeController[] volumeControllers;
+
+    [Tooltip("Reference to the volume slider GUI object")]
     public Slider volumeSlider;
+
+    [Tooltip("Reference to the mouse sensitivity slider GUI object")]
     public Slider mouseSlider;
 
     [Header("Graphics Settings")]
+    /// <summary>
+    /// Reference the HUD FPS text
+    /// </summary>
     private TextMeshProUGUI fpsText;
+
+    [Tooltip("Graphics GUI objects")]
     public GraphicsWidgets widgets;
 
+    /// <summary>
+    /// Whether the graphics dropdowns have been populated yet
+    /// </summary>
     private bool loadedDropdowns;
 
-    void Awake() {
+    /// <summary>
+    /// Singleton management
+    /// </summary>
+    private void Awake() {
         if (inGameMenuInstance != null && inGameMenuInstance != this) {
             Destroy(this.gameObject);
             return;
@@ -38,6 +90,9 @@ public class InGameMenu : MonoBehaviour {
         StateManager.singletons.Add(this.gameObject);
     }
 
+    /// <summary>
+    /// Initialize references and lists
+    /// </summary>
     private void Start() {
         volumeSlider.value = Settings.volume;
         mouseSlider.value = Settings.mouseSensitivity;
@@ -52,21 +107,36 @@ public class InGameMenu : MonoBehaviour {
         fpsText = GameObject.FindGameObjectWithTag("HUD").transform.Find("FPS").gameObject.GetComponent<TextMeshProUGUI>();
     }
 
+    /// <summary>
+    /// Dynamic adjustment of the global volume value based on the slider
+    /// adjustment
+    /// </summary>
     public float volume {
         get => Settings.volume;
         set => Settings.volume = value;
     }
 
+    /// <summary>
+    /// Dynamic adjustment of the mouse sensitivity value based on the slider
+    /// adjustment
+    /// </summary>
+    /// <value></value>
     public float mouseSensitivity {
         get => Settings.mouseSensitivity;
         set => Settings.mouseSensitivity = value;
     }
 
-    void OnEnable() {
+    /// <summary>
+    /// Add a listener when this script is enabled
+    /// </summary>
+    private void OnEnable() {
         SceneManager.sceneLoaded += onSceneLoad;
     }
 
-    void OnDisable() {
+    /// <summary>
+    /// Remove a listener when this script is disabled
+    /// </summary>
+    private void OnDisable() {
         SceneManager.sceneLoaded -= onSceneLoad;
     }
 
@@ -75,9 +145,9 @@ public class InGameMenu : MonoBehaviour {
     /// controllers, which are attached to music players in the levels.
     /// Otherwise, the music players aren't affected by the settings volume.
     /// </summary>
-    /// <param name="scene"></param>
-    /// <param name="mode"></param>
-    void onSceneLoad(Scene scene, LoadSceneMode mode) {
+    /// <param name="scene">unused event value</param>
+    /// <param name="mode">unused event value</param>
+    private void onSceneLoad(Scene scene, LoadSceneMode mode) {
         // Attach listeners for slider adjustments
         volumeSlider.onValueChanged.RemoveAllListeners();
         volumeControllers = GameObject.FindObjectsOfType<VolumeController>();
@@ -107,9 +177,9 @@ public class InGameMenu : MonoBehaviour {
     }
 
     /// <summary>
-    /// Pause menu event handling.
+    /// Pause menu event handling. Processes player input.
     /// </summary>
-    void Update() {
+    private void Update() {
         if (StateManager.playerDead || StateManager.playerWon) {
             return;
         }
@@ -154,38 +224,76 @@ public class InGameMenu : MonoBehaviour {
         pauseText.text = "";
     }
 
+    /// <summary>
+    /// Button callback to be assigned to the Options button.
+    /// Displays the options panel.
+    /// </summary>
     public void OptionsClick() {
         disableAllPanelsExcept(optionsPanel);
     }
 
+    /// <summary>
+    /// Button callback to be assigned to the Quit button.
+    /// Displays the quit confirmation panel.
+    /// </summary>
     public void QuitClick() {
         disableAllPanelsExcept(quitPanel);
     }
 
+    /// <summary>
+    /// Button callback to be assigned to the Inventory button.
+    /// Displays the inventory panel.
+    /// Remaining logic for the inventory panel is present in Inventory.cs,
+    /// not here.
+    /// </summary>
     public void inventoryClick() {
         disableAllPanelsExcept(inventoryPanel);
     }
 
+    /// <summary>
+    /// Button callback to be assigned to the Restart button on the
+    /// quit confirmation panel.
+    /// Sends the player back to the main menu.
+    /// </summary>
     public void RestartClick() {
         pauseText.text = "";
         Settings.quitToMainMenu();
     }
 
+    /// <summary>
+    /// Button callback to be assigned to the Quit button on the
+    /// quit confirmation panel.
+    /// Closes the game.
+    /// </summary>
     public void QuitAppClick() {
         pauseText.text = "";
         Settings.quitToDesktop();
     }
 
+    /// <summary>
+    /// Button callback to be assigned to the the Cancel button...
+    /// somewhere. It's the same as the below function.
+    /// To avoid last-minute bugs from deleting a function without
+    /// reassigning all references, this is left intact.
+    /// </summary>
     public void CancelClick() {
         disableAllPanelsExcept(pausePanel);
         creditBar.SetActive(true);
     }
 
+    /// <summary>
+    /// Button callback to be assigned to the Back button (X).
+    /// Returns the pause menu GUI to the initial "paused" state.
+    /// </summary>
     public void BackClick() {
         disableAllPanelsExcept(pausePanel);
         creditBar.SetActive(true);
     }
 
+    /// <summary>
+    /// Button callback to be assigned to the Graphics Settings
+    /// button. Displays the graphics options menu.
+    /// </summary>
     public void GraphicsClick() {
         disableAllPanelsExcept(graphicsPanel);
         if (!loadedDropdowns) {

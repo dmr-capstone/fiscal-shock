@@ -4,6 +4,9 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Creates the flat floor of a dungeon level.
+    /// </summary>
     public static class Floor {
         public static void setFloor(Dungeoneer d) {
             Debug.Log("Spawning floor");

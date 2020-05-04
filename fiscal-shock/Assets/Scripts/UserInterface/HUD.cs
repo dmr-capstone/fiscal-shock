@@ -2,37 +2,96 @@
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Handles the heads-up display that imparts all of the immediately
+/// useful (and most important to know) information to the player.
+/// </summary>
 public class HUD : MonoBehaviour
 {
+    [Tooltip("Reference to the HUD text that shows the player's current cash on hand")]
     public TextMeshProUGUI pocketChange;
+
+    [Tooltip("Reference to the HUD text that shows the player's current debt")]
     public TextMeshProUGUI debtTracker;
+
+    [Tooltip("Reference to the HUD object that functions as a compass toward the escape portal")]
     public GameObject compassImage;
+
+    [Tooltip("Reference to the 2D GUI transform of the escape compass, so it can be rotated")]
     public RectTransform escapeCompass;
+
+    [Tooltip("Reference to the money loss text object")]
     public TextMeshProUGUI shotLoss;
+
+    [Tooltip("Reference to the money gain text object")]
     public TextMeshProUGUI earn;
+
+    [Tooltip("Reference to the FPS text object")]
     public TextMeshProUGUI fps;
 
     /* Variables set at runtime */
+    /// <summary>
+    /// Reference the player's transform, so the player's position can be
+    /// used to determine the compass bearing
+    /// </summary>
+    /// <value></value>
     public Transform playerTransform { get; set; }
+
+    /// <summary>
+    /// Reference to the escape portal's transform, so the position can
+    /// be used to determine the compass bearing
+    /// </summary>
+    /// <value></value>
     public Transform escapeHatch { get; set; }
+
+    /// <summary>
+    /// Singleton management
+    /// </summary>
+    /// <value></value>
     public static HUD hudInstance { get; private set; }
+
+    /// <summary>
+    /// How frequently, in seconds, the FPS text should update. Updating less
+    /// frequently than each frame makes the text more readable, and also gives
+    /// a more accurate-feeling value. The value is smoothed over time, so
+    /// stutters of just a few frames don't adversely affect the display.
+    /// </summary>
     private float fpsUpdateRate = 1f;  // in seconds
+
+    /// <summary>
+    /// Accumulated FPS values. Used to calculate the smoothed FPS over time
+    /// sicne the last update.
+    /// </summary>
     private float accumulatedFps;
+
+    /// <summary>
+    /// Ticks/frames since the last FPS update.
+    /// </summary>
     private float ticksSinceLastUpdate;
+
+    /// <summary>
+    /// Number of ticks since the last FPS update.
+    /// </summary>
     private int numTicksSinceLast;
 
-     void Awake() {
-         if (hudInstance != null && hudInstance != this) {
-             Destroy(this.gameObject);
-             return;
-         } else {
-             hudInstance = this;
-         }
-         DontDestroyOnLoad(this.gameObject);
-         StateManager.singletons.Add(this.gameObject);
-     }
+    /// <summary>
+    /// Singleton management.
+    /// </summary>
+    private void Awake() {
+        if (hudInstance != null && hudInstance != this) {
+            Destroy(this.gameObject);
+            return;
+        } else {
+            hudInstance = this;
+        }
+        DontDestroyOnLoad(this.gameObject);
+        StateManager.singletons.Add(this.gameObject);
+    }
 
-    void Start() {
+    /// <summary>
+    /// Initialize values and references used by the HUD.
+    /// </summary>
+    private void Start() {
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         shotLoss.text = "";
         earn.text = "";
@@ -40,14 +99,13 @@ public class HUD : MonoBehaviour
     }
 
     /// <summary>
-    /// Currently updates every frame, could also instead just be asked to
-    /// update by functions that change the HUD if that is a performance
-    /// concern.
+    /// Processes updates to the HUD every frame.
     /// </summary>
-    void Update() {
+    private void Update() {
         pocketChange.text = $"{StateManager.cashOnHand.ToString("N2")}";
         debtTracker.text = $"DEBT: {(-StateManager.totalDebt).ToString("N2")}";
 
+        // Handle FPS display when applicable
         if (Settings.values.showFPS && Time.timeScale > 0) {
             ticksSinceLastUpdate += Time.deltaTime;
             numTicksSinceLast++;
@@ -65,6 +123,7 @@ public class HUD : MonoBehaviour
             }
         }
 
+        // Handle compass rotation
         if (escapeHatch != null && playerTransform != null) {
             compassImage.SetActive(true);
             Vector3 dir = playerTransform.position - escapeHatch.position;

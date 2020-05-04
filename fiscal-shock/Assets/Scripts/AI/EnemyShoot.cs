@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 
-//This script allows enemy bots to fire weapons.
+/// <summary>
+/// Attack behavior for the enemy AI.
+/// </summary>
 public class EnemyShoot : MonoBehaviour {
     /// <summary>
     /// Reference to the player. Set at runtime.
@@ -26,7 +28,7 @@ public class EnemyShoot : MonoBehaviour {
     public float attackDamage = 10;
 
     [Tooltip("Jitter magnitude applied to bot's aim. Higher numbers indicate greater inaccuracy.")]
-    public float aimJitter = 10;
+    public float deviation = 10;
 
     [Tooltip("How close the bot must be to begin firing.")]
     public float attackRange = 6f;
@@ -77,14 +79,21 @@ public class EnemyShoot : MonoBehaviour {
     /// </summary>
     private PlayerHealth playerHealth;
 
-    void Start() {
+    /// <summary>
+    /// Initialize references and variables that can't be defined during
+    /// declaration.
+    /// </summary>
+    private void Start() {
         fireSound = GetComponent<AudioSource>();
         player = GameObject.FindGameObjectWithTag("Player");
         playerMask = 1 << LayerMask.NameToLayer("Player");
         playerHealth = player.GetComponent<PlayerHealth>();
     }
 
-    void Update() {
+    /// <summary>
+    /// Update values each frame.
+    /// </summary>
+    private void Update() {
         if (player == null || !spottedPlayer) { return; }
 
         float distance = enemyMovement.getDistanceFromPlayer();
@@ -92,12 +101,18 @@ public class EnemyShoot : MonoBehaviour {
         if (distance <= attackRange) {
             timeSinceLastAttack += Time.deltaTime;
             if (timeSinceLastAttack > (attackDelay * Random.Range(0.75f, 1.40f)) && !isFiring) {
-                StartCoroutine(fireBullet(10 - aimJitter, attackDamage));
+                StartCoroutine(fireBullet(10 - deviation, attackDamage));
             }
         }
     }
 
-    private System.Collections.IEnumerator fireBullet(float accuracy, float damage) {
+    /// <summary>
+    /// Basic enemy attack function.
+    /// </summary>
+    /// <param name="deviation">amount of deviation applied to a perfectly accurate shot</param>
+    /// <param name="damage">damage this attack would deal if it hits the player</param>
+    /// <returns></returns>
+    private System.Collections.IEnumerator fireBullet(float deviation, float damage) {
         isFiring = true;
         if (!runAndGun) {
             enemyMovement.enabled = false;
@@ -106,7 +121,7 @@ public class EnemyShoot : MonoBehaviour {
         yield return new WaitForSeconds(attackAnimationDelay);
         fireSound.PlayOneShot(fireSoundClip, Settings.volume);
 
-        // Instantiate the projectile
+        // Instantiate the projectile for bots that have projectiles defined
         // Assumes bot is facing the player, so fire in that direction
         if (bulletPrefab != null) {
             GameObject bullet = Instantiate(
@@ -126,18 +141,19 @@ public class EnemyShoot : MonoBehaviour {
 
             // Fire the bullet and apply accuracy
             Vector3 rotationVector = bullet.transform.rotation.eulerAngles;
-            rotationVector.x += ((Random.value * 2) - 1) * accuracy;
-            rotationVector.y += ((Random.value * 2) - 1) * accuracy;
-            rotationVector.z += ((Random.value * 2) - 1) * accuracy;
+            rotationVector.x += ((Random.value * 2) - 1) * deviation;
+            rotationVector.y += ((Random.value * 2) - 1) * deviation;
+            rotationVector.z += ((Random.value * 2) - 1) * deviation;
             bullet.transform.rotation = Quaternion.Euler(rotationVector);
             bullet.SetActive(true);
             Destroy(bullet, bulletScript.bulletLifetime);
-        } else {  // Do a melee attack using the projectile spawn point as the epicenter
+        } else {  // Otherwise, do a melee attack using the projectile spawn point as the epicenter
             if (Physics.CheckSphere(projectileSpawnPoint.position, attackRange, playerMask)) {
                 playerHealth.takeDamage(damage);
             }
         }
 
+        // Finish waiting for the attack animation to end before moving again
         if (!runAndGun) {
             yield return new WaitForSeconds(attackAnimationLength - attackAnimationDelay);
             enemyMovement.enabled = true;

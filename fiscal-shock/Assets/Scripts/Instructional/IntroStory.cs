@@ -4,6 +4,9 @@ using UnityEngine.SceneManagement;
 using TMPro;
 using FiscalShock.GUI;
 
+/// <summary>
+/// Handles the story tutorial level events.
+/// </summary>
 public class IntroStory : MonoBehaviour {
     public List<GameObject> tutorialWeapons;
     public Inventory playerInventory;
@@ -61,7 +64,7 @@ public class IntroStory : MonoBehaviour {
     private PlayerShoot playerShoot;
     private MouseLook mouseLook;
 
-    void Start() {
+    private void Start() {
         storyCamera = GameObject.FindGameObjectWithTag("MainCamera");
         mouseLook = storyCamera.GetComponent<MouseLook>();
         playerShoot = player.GetComponentInChildren<PlayerShoot>();
@@ -84,8 +87,7 @@ public class IntroStory : MonoBehaviour {
         }
     }
 
-    // Update is called once per frame
-    void Update() {
+    private void Update() {
         showText();
         if (storyPosition == 6 && !part1 && (int) showing > introStory2.Length) {
             animationState = 1;
@@ -358,7 +360,7 @@ public class IntroStory : MonoBehaviour {
     /// <summary>
     /// This function increases how much of the text is showing until all the text is showing.
     /// </summary>
-    void showText() {
+    private void showText() {
         if (showing < 0) {
             showing = 0;  // clicking too fast causes errors
         }

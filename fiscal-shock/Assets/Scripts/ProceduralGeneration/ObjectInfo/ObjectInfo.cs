@@ -1,6 +1,11 @@
 using UnityEngine;
 
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Intended to prevent spawning of objects that clip into
+    /// each other by destroying one of them when a collision is
+    /// detected.
+    /// </summary>
     public class ObjectInfo : MonoBehaviour {
         public bool toBeDestroyed { get; set; }
         private float timer;

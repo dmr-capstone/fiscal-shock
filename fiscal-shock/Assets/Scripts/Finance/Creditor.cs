@@ -8,73 +8,148 @@ using System.Collections.Generic;
 using System;
 
 /// <summary>
-/// Runs the loan businesses in the hub, allows for payment and 
+/// Runs the loan businesses in the hub; allows for payment and
 /// acquisition of debt. Also manages the GUI text fields.
 /// </summary>
 public class Creditor : MonoBehaviour {
+    [Tooltip("Sound to play when positive cash events happen.")]
     public AudioClip paymentSound;
+
+    [Tooltip("Sound to play when negative events or failures happen.")]
     public AudioClip failureSound;
+
+    /// <summary>
+    /// Whether the player is close enough to interact with this creditor.
+    /// </summary>
     private bool playerIsInTriggerZone = false;
+
+    /// <summary>
+    /// Audio source to play the sound effects on.
+    /// </summary>
     private AudioSource audioS;
-    public TextMeshProUGUI dialogText, rateText;
+
+    [Tooltip("References to the dialog and loan information text on the GUI.")]
+    public TextMeshProUGUI dialogText, maxLoanText;
+
+    [Tooltip("Reference to the main GUI panel of this creditor.")]
     public GameObject creditorPanel;
+
+    [Tooltip("References to the input fields for the loan ID and amount for paying off a loan.")]
     public TMP_InputField paymentId, paymentAmount;
+
+    [Tooltip("List of GUI input elements for each type of available loan.")]
     public List<LoanEntry> loanEntries;
+
+    [Tooltip("Data about each different type of loan available here.")]
     public List<ValidLoan> validLoans;
+
+    [Tooltip("Base maximum amount this lender will offer. Modified by credit rating.")]
     public float maxLoanAmount = 3000f;
+
     [Tooltip("Lender will not lend loans anymore once their threat level has passed this")]
     public int threatThreshold;
+
+    [Tooltip("Unique ID for this creditor. Multiple NPCs could share a creditor ID if they are intended to be different interfaces to the same financial institution, e.g., different branches of the same bank.")]
     public string creditorId;
+
+    [Tooltip("Threat level this creditor starts at.")]
     public int baseThreatLevel;
-    public int threatLevel => StateManager.lenders[creditorId].threatLevel;
-    public List<Loan> myLoans => StateManager.loanList.Where(l => l.lender == creditorId).ToList();
-    public int numberOfLoans => myLoans.Count;
-    public float loanTotal => myLoans.Sum(l => l.total);
+
     /// <summary>
-    /// No support for scrolling loan list yet
+    /// Reference to this creditor's current threat level, stored in the state
+    /// manager.
+    /// </summary>
+    public int threatLevel => StateManager.lenders[creditorId].threatLevel;
+
+    /// <summary>
+    /// Reference to loans associated with this creditor, stored in the state
+    /// manager.
+    /// </summary>
+    public List<Loan> myLoans => StateManager.loanList.Where(l => l.lender == creditorId).ToList();
+
+    /// <summary>
+    /// Number of loans taken out against this creditor.
+    /// </summary>
+    public int numberOfLoans => myLoans.Count;
+
+    /// <summary>
+    /// Total debt owed to this creditor.
+    /// </summary>
+    public float loanTotal => myLoans.Sum(l => l.total);
+
+    /// <summary>
+    /// No support for scrolling loan list yet. Hard cap on the
+    /// number of loans this creditor may lend.
     /// </summary>
     private readonly int loanHardCap = 3;
+
+    [Tooltip("Whether the player begins the game indebted to this creditor.")]
     public bool initiallyIndebted;
+
+    [Tooltip("The amount of debt owed to this creditor, if the player is initially indebted.")]
     public float initialDebtAmount;
+
+    [Tooltip("Type of loan of the initial debt.")]
     public ValidLoan initialDebtType;
+
+    [Tooltip("Added to the player's cash on hand when starting the game. The starting cash on hand is the sum of this field from all creditors in the starting hub.")]
     public float initialRemainingCash;
+
+    /// <summary>
+    /// Default dialog text; saved to reset when the player leaves the GUI.
+    /// </summary>
     private String defaultText;
+
     /// <summary>
     /// Don't blow out my ears with initial loans as soon as you walk
-    /// into the hub
+    /// into the hub. Just a modifier on the cash out sound played when
+    /// a loan is taken out, since that same function is called when you
+    /// first start the game and have initial debt applied.
     /// </summary>
     private int debtIsLoud = 1;
+
+    [Tooltip("Reference to the tutorial GUI panel for creditors.")]
     public GameObject tutorial;
 
-    void OnTriggerEnter(Collider col) {
+    /// <summary>
+    /// Update state when the player is close enough to interact.
+    /// </summary>
+    /// <param name="col">collider that entered the trigger zone</param>
+    private void OnTriggerEnter(Collider col) {
         if (col.gameObject.tag == "Player") {
             playerIsInTriggerZone = true;
         }
     }
 
-    void OnTriggerExit(Collider col) {
+    /// <summary>
+    /// Update state when the player leaves the interactable area.
+    /// </summary>
+    /// <param name="col">collider that exited the trigger zone</param>
+    private void OnTriggerExit(Collider col) {
         if (col.gameObject.tag == "Player") {
             playerIsInTriggerZone = false;
         }
     }
 
     /// <summary>
-    /// Ran on start. Adds creditors to tracker if not already there,
-    ///  adds initial debt and sets the interest rate text for that day.
+    /// Runs on start. Adds creditors to tracker if not already there,
+    /// adds initial debt and sets the interest rate text for that day.
     /// </summary>
-    void Start()
+    private void Start()
     {
         audioS = GetComponent<AudioSource>();
         defaultText = dialogText.text;
         creditorPanel.SetActive(false);
 
-        // if StateManager isn't already tracking me, add me
+        // if StateManager isn't already tracking me by my creditorID, add me
         if (!StateManager.lenders.ContainsKey(creditorId)) {
             CreditorData cd = new CreditorData(false, baseThreatLevel);
             StateManager.lenders.Add(creditorId, cd);
         }
 
-        if (!StateManager.sawEntryTutorial && StateManager.cashOnHand <= StateManager.totalDebt && initiallyIndebted) {  // implies this is the first visit to town
+        // these assumptions imply this is the first visit to the hub, as the player hasn't seen the dungeon entry tutorial (and therefore hasn't been inside the dungeon, so they can't have gone to the hub more than once)
+        // when this is the case, accrue initial debt if applicable
+        if (!StateManager.sawEntryTutorial && StateManager.cashOnHand <= StateManager.totalDebt && initiallyIndebted) {
             debtIsLoud = 0;
             initialDebtType.addLoanInput.text = initialDebtAmount.ToString();
             addDebt(initialDebtType);
@@ -82,9 +157,10 @@ public class Creditor : MonoBehaviour {
             debtIsLoud = 1;
             dialogText.text = defaultText;
         }
+
         updateFields();
         Debug.Log($"{creditorId} threat: {threatLevel}, loans: {numberOfLoans}, sum: {loanTotal}");
-        //iterator through valid loans that changes loan text in the GUI based on type
+        // iterator through valid loans that changes loan text in the GUI based on type
         float helperRate, helperCollateral;
         foreach (ValidLoan item in validLoans) {
             if (item.loanType != LoanType.Secured) {
@@ -99,10 +175,10 @@ public class Creditor : MonoBehaviour {
     }
 
     /// <summary>
-    /// Checks if the player is in range and is pressing the interaction key. 
+    /// Checks if the player is in range and is pressing the interaction key.
     /// If so, it will activate the cursor and turn on the menu
     /// </summary>
-    void Update()
+    private void Update()
     {
         if (playerIsInTriggerZone) {
             if (Input.GetKeyDown(Settings.interactKey) && !tutorial.activeSelf) {
@@ -172,7 +248,7 @@ public class Creditor : MonoBehaviour {
 
     /// <summary>
     /// Pays the selected loan by the specified amount.
-    /// If the player pays it off the win condition is triggered.
+    /// If the player pays it off, the win condition is triggered.
     /// </summary>
     public void payDebt() {
         try{
@@ -181,7 +257,7 @@ public class Creditor : MonoBehaviour {
             Debug.Log($"{creditorId}: receiving ${amount} payment on loan ${loanNum}");
             Loan selectedLoan = myLoans.First(l => l.ID == loanNum);
             ValidLoan thisLoan = validLoans.First(m => m.loanType == selectedLoan.type);
-            // Don't pay off another lender's loans here... Done. -ZM
+            // Don't pay off another lender's loans here...
             if(thisLoan == null){
                 dialogText.text = "I think you are looking for the other guy.";
                 audioS.PlayOneShot(failureSound, Settings.volume);
@@ -217,7 +293,7 @@ public class Creditor : MonoBehaviour {
                 return;
             }
         }
-        catch(Exception e){
+        catch (Exception e) {
             dialogText.text = "Wait... What happened? Where am I?";
             Debug.Log($"Exception found: {e}");
         }
@@ -227,7 +303,7 @@ public class Creditor : MonoBehaviour {
     /// Updates the GUI so that the player can see their loans.
     /// Allows for accurate information to be displayed.
     /// </summary>
-    void updateFields() {
+    private void updateFields() {
         float tempRate;
         for (int i = 0; i < loanEntries.Count; ++i) {
             if (i >= myLoans.Count) {
@@ -252,11 +328,11 @@ public class Creditor : MonoBehaviour {
                 loanEntries[i].type.text = typetext;
             }
         }
-        rateText.text = $"Max Credit: {(maxLoanAmount * StateManager.maxLoanAdjuster).ToString("N2")}\nTotal Loans: {loanTotal.ToString("N2")}";
+        maxLoanText.text = $"Max Credit: {(maxLoanAmount * StateManager.maxLoanAdjuster).ToString("N2")}\nTotal Loans: {loanTotal.ToString("N2")}";
     }
 
     /// <summary>
-    /// Determines if the player has won the game, called after any loan is
+    /// Determines if the player has won the game. Called after any loan is
     /// fully paid off
     /// </summary>
     public void checkWin() {
@@ -278,6 +354,9 @@ public class Creditor : MonoBehaviour {
         StartCoroutine(StateManager.makePauseAvailableAgain());
     }
 
+    /// <summary>
+    /// Disables the tutorial window and unpauses the game.
+    /// </summary>
     public void dismissTutorial() {
         tutorial.SetActive(false);
         Time.timeScale = 1;
@@ -285,7 +364,8 @@ public class Creditor : MonoBehaviour {
 }
 
 /// <summary>
-/// Loan Entries are helper objects
+/// Helper class to expose similar collections of GUI elements in the
+/// Unity inspector. Makes building prefabs easier.
 /// </summary>
 [System.Serializable]
 public class LoanEntry {

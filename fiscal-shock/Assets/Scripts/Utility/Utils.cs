@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.IO;
 
+/// <summary>
+/// Utility functions, not quite related to any gameplay aspects.
+/// </summary>
 public static class Utils {
     /// <summary>
     /// Serialize an object to json and save it in a file

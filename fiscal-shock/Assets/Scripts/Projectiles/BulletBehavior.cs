@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Behavior of a projectile, after it is fired and left to its own devices.
+/// </summary>
 public class BulletBehavior : MonoBehaviour
 {
     [Tooltip("Amount of damage this bullet deals when fired by the player.")]
@@ -62,7 +65,7 @@ public class BulletBehavior : MonoBehaviour
     /// <summary>
     /// Set the bullet's trajectory when it's enabled (fired).
     /// </summary>
-    public void OnEnable() {
+    private void OnEnable() {
         rb.velocity = transform.forward * bulletSpeed;
     }
 
@@ -71,7 +74,7 @@ public class BulletBehavior : MonoBehaviour
     /// Disabling implies a return to the object pool, or beginning initial
     /// setup of the bullet before firing.
     /// </summary>
-    public void OnDisable() {
+    private void OnDisable() {
         StopAllCoroutines();  // disable timeout if it's happening
         target = null;
         localizedTarget = Vector3.zero;
@@ -83,8 +86,8 @@ public class BulletBehavior : MonoBehaviour
     /// <summary>
     /// Behavior when the bullet collides with something.
     /// </summary>
-    /// <param name="col"></param>
-    void OnCollisionEnter(Collision col) {
+    /// <param name="col">collision information</param>
+    private void OnCollisionEnter(Collision col) {
         if (gameObject.tag != "Enemy Projectile" && (col.gameObject.tag == "Bullet" || col.gameObject.layer == LayerMask.NameToLayer("Player"))) {
             // Do nothing when these objects are hit
             return;
@@ -111,7 +114,6 @@ public class BulletBehavior : MonoBehaviour
     /// firing script explicitly. Only used by the player, as enemy bullets are
     /// not currently pooled.
     /// </summary>
-    /// <returns></returns>
     public IEnumerator timeout() {
         yield return new WaitForSeconds(bulletLifetime);
         transform.gameObject.SetActive(false);
@@ -119,9 +121,10 @@ public class BulletBehavior : MonoBehaviour
     }
 
     /// <summary>
-    /// Physics updates for the bullet.
+    /// Physics updates for the bullet. Handles homing behavior and ricochet
+    /// when applicable.
     /// </summary>
-    void FixedUpdate() {
+    private void FixedUpdate() {
         // Enemy projectiles don't update their trajectory every update
         if (gameObject.tag == "Enemy Projectile" && target != null) {
             timeSinceLastAiming += Time.deltaTime;
