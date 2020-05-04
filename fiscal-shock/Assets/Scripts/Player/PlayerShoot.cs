@@ -21,16 +21,45 @@ public class PlayerFiringState {
     public int lastWeapon = -1;
 }
 
+/// <summary>
+/// Handles player attack logic and processes related input.
+/// </summary>
 public class PlayerShoot : MonoBehaviour {
+    [Tooltip("Sound effect to play when out of ammo (not enough cash to fire bullet of currently equipped weapon)")]
     public AudioClip outOfAmmo;
+
+    [Tooltip("Sound effect to play when the weapon is cooling down (firing before the fire delay has passed, for non-automatic weapons)")]
     public AudioClip fireRateSound;
-    public List<GameObject> guns;  // TODO inaccessible in inspector
+
+    [Tooltip("Current list of guns the player has access to.")]
+    public List<GameObject> guns;
 
     /* Assigned at runtime */
+    /// <summary>
+    /// Current weapon.
+    /// </summary>
+    /// <value></value>
     public GameObject weapon { get; private set; }
+
+    /// <summary>
+    /// Reference to the HUD crosshair, so it can be hidden or shown.
+    /// </summary>
+    /// <value></value>
     public Image crossHair { get; private set; }
+
+    /// <summary>
+    /// Reference to the current gun's audio source.
+    /// </summary>
     private AudioSource gunAudioSource => currentWeaponStats?.gunAudioSource;
+
+    /// <summary>
+    /// Reference to the current gun's weapon stats.
+    /// </summary>
     private WeaponStats currentWeaponStats;
+
+    /// <summary>
+    /// Reference to the visual feedback controller on the HUD.
+    /// </summary>
     private FeedbackController feed;
 
     /* Related to current state */
@@ -49,9 +78,22 @@ public class PlayerShoot : MonoBehaviour {
     /// the input action callbacks
     /// </summary>
     private bool firing;
+
+    /// <summary>
+    /// How long the weapon animation time has played
+    /// </summary>
     private float animatedTime;
+
+    /// <summary>
+    /// Reference to the animation object for a weapon, needed to play
+    /// draw/holster animations
+    /// </summary>
     private Animation weaponAnimator;
 
+    /// <summary>
+    /// Handle input events for firing the weapon
+    /// </summary>
+    /// <param name="cont">context</param>
     public void OnFire(InputAction.CallbackContext cont) {
         if (cont.phase == InputActionPhase.Canceled || Time.timeScale == 0) {
             state.alreadyFired = false;
@@ -62,6 +104,10 @@ public class PlayerShoot : MonoBehaviour {
         state.alreadyFired = !firing;
     }
 
+    /// <summary>
+    /// Handle input events for scrolling through the weapon list
+    /// </summary>
+    /// <param name="cont">context</param>
     public void OnWeaponSwap(InputAction.CallbackContext cont) {
         if (cont.phase != InputActionPhase.Performed || Time.timeScale == 0 || state.drawingWeapon || state.holsteringWeapon) {
             return;
@@ -74,6 +120,10 @@ public class PlayerShoot : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Handle input events for swapping to a specific weapon
+    /// </summary>
+    /// <param name="cont"></param>
     public void OnWeaponSelect(InputAction.CallbackContext cont) {
         if (state.drawingWeapon || state.holsteringWeapon) {
             return;
@@ -84,7 +134,10 @@ public class PlayerShoot : MonoBehaviour {
         }
     }
 
-    public void Start() {
+    /// <summary>
+    /// Initialize references and states
+    /// </summary>
+    private void Start() {
         feed = GameObject.FindGameObjectWithTag("HUD").GetComponent<FeedbackController>();
         GameObject tmp = GameObject.FindGameObjectWithTag("Crosshair");
         if (tmp != null) {
@@ -96,16 +149,27 @@ public class PlayerShoot : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Reset the reference to the HUD feedback controller
+    /// </summary>
     public void resetFeed() {
         feed = GameObject.FindGameObjectWithTag("HUD").GetComponent<FeedbackController>();
     }
 
-    void OnDisable() {
+    /// <summary>
+    /// When this script is disabled (as when the hub is entered),
+    /// stop firing and hide things
+    /// </summary>
+    private void OnDisable() {
         stopFiringAuto();
         hideWeapon();
     }
 
-    void OnEnable() {
+    /// <summary>
+    /// When this script is enabled (as when entering a dungeon),
+    /// show things and equip the appropriate weapon if one wasn't equipped
+    /// </summary>
+    private void OnEnable() {
         if (guns == null || guns.Count < 1) {
             return;
         }
@@ -117,6 +181,9 @@ public class PlayerShoot : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Hide the currently equipped weapon and crosshair
+    /// </summary>
     private void hideWeapon() {
         if (weapon != null) {
             weapon.SetActive(false);
@@ -127,12 +194,18 @@ public class PlayerShoot : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Stop playing auto-fire sound effects and update the state
+    /// </summary>
     private void stopFiringAuto() {
         state.firingAutomatic = false;
         gunAudioSource?.Stop();
     }
 
-    public void Update() {
+    /// <summary>
+    /// Process current player shooting state each frame
+    /// </summary>
+    private void Update() {
         /* Check to see if we need to stop automatic firing */
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Hub" || StateManager.playerDead || StateManager.playerWon) {
             stopFiringAuto();
@@ -200,7 +273,6 @@ public class PlayerShoot : MonoBehaviour {
     /// <summary>
     /// Fade the crosshair while we're not allowed to shoot
     /// </summary>
-    /// <returns></returns>
     private IEnumerator firingCooldown() {
         if (currentWeaponStats.fireDelay <= 0 || state.weaponCooling) {
             yield return null;
@@ -242,7 +314,8 @@ public class PlayerShoot : MonoBehaviour {
     }
 
     /// <summary>
-    /// If player is currently holstering or drawing a weapon, alter weapon position to animate the process.
+    /// If player is currently holstering or drawing a weapon, alter weapon
+    /// position to animate the process.
     /// </summary>
     private void playWeaponAnimation() {
         if (weapon == null) {
@@ -281,6 +354,9 @@ public class PlayerShoot : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Update the state to holster the current weapon when appropriate
+    /// </summary>
     public void HolsterWeapon() {
         // If weapon is already selected, do nothing
         if (guns[slot] == weapon || state.drawingWeapon) {

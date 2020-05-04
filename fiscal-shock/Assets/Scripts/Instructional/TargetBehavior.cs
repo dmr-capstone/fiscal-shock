@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Behavior of practice targets during story tutorial
+/// </summary>
 public class TargetBehavior : MonoBehaviour {
     private int rising = 23;
     private int falling = 23;
@@ -13,7 +16,7 @@ public class TargetBehavior : MonoBehaviour {
     /// <summary>
     /// Target will move back and forth until it is hit
     /// </summary>
-    void Update() {
+    private void Update() {
         if (rising < 23) {
             transform.position += new Vector3(0, 0.1f, 0);
             rising++;
@@ -44,7 +47,7 @@ public class TargetBehavior : MonoBehaviour {
         }
     }
 
-    void OnCollisionEnter(Collision col) {
+    private void OnCollisionEnter(Collision col) {
         if (moving && !wasHit) {
             wasHit = true;
             hitCount++;
@@ -54,6 +57,9 @@ public class TargetBehavior : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Enable this target during the tutorial
+    /// </summary>
     public void activateTarget() {
         rising = 0;
         wasHit = false;

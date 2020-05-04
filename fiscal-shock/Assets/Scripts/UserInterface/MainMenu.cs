@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 /// Script to control the main menu of the game.
 /// </summary>
 public class MainMenu : MonoBehaviour {
-    public void Start() {
+    private void Start() {
         Settings.forceUnlockCursorState();
         Settings.loadSettings();
     }
@@ -13,7 +13,7 @@ public class MainMenu : MonoBehaviour {
     /// <summary>
     /// Starts the game by loading the player into the hub.
     /// </summary>
-    void PlayClick() {
+    public void PlayClick() {
         Debug.Log("Starting game...");
         if (Settings.values.sawStoryTutorial) {
             SceneManager.LoadScene("Hub");
@@ -25,7 +25,7 @@ public class MainMenu : MonoBehaviour {
     /// <summary>
     /// Quits the game and closes the application.
     /// </summary>
-    void QuitClick() {
+    public void QuitClick() {
         Debug.Log("Quitting from main menu.");
         Settings.quitToDesktop();
     }

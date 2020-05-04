@@ -6,24 +6,72 @@ using FiscalShock.Procedural;
 using FiscalShock.GUI;
 
 /// <summary>
-/// This is the script that runs the shop. Weapons are generated and 
+/// This is the script that runs the shop. Weapons are generated and
 /// the shop sells these to the player.
 /// </summary>
 public class ShopScript : MonoBehaviour {
+    [Tooltip("Reference to the weapon shop tutorial GUI panel.")]
     public GameObject tutorial;
+
+    [Tooltip("Reference to the debug menu used to text procedural weapon generation.")]
     public GameObject debugMenu;
+
+    /// <summary>
+    /// Audio source used to play sound effects.
+    /// </summary>
     private AudioSource audioS;
+
+    [Tooltip("Sound effect played on successful transactions.")]
     public AudioClip paymentSound;
+
+    [Tooltip("Sound effect played on failed transactions.")]
     public AudioClip failureSound;
+
+    [Tooltip("Reference to NPC's dialog text box.")]
     public TextMeshProUGUI dialogText;
+
+    [Tooltip("Reference to the GUI panel of this shop.")]
     public GameObject shopPanel;
+
+    /// <summary>
+    /// Reference to a procedural weapon generator.
+    /// </summary>
     private WeaponGenerator genny;
+
+    [Tooltip("List of inventory slots that will be filled with weapons by the weapon generator.")]
     public List<ShopInventorySlot> inventorySlots;
+
+    /// <summary>
+    /// Track whether the player can interact with this shop.
+    /// </summary>
+    /// <value></value>
     public bool playerIsInTriggerZone { get; private set; } = false;
+
+    /// <summary>
+    /// Weapons currently in stock. Updated whenever new weapons are
+    /// generated.
+    /// </summary>
     private List<GameObject> inventory = new List<GameObject>();
+
+    /// <summary>
+    /// Reference to the player's shoot script. Needed to add new weapons
+    /// on purchase.
+    /// </summary>
     private PlayerShoot playerShoot;
+
+    /// <summary>
+    /// Reference to the player's inventory. Needed to validate whether the
+    /// player can purchase more weapons.
+    /// </summary>
     private Inventory playerInventory;
+
+    /// <summary>
+    /// Hard cap on maximum number of guns the player can hold. Based on the
+    /// inventory GUI having only 9 slots. The inventory GUI must be redone,
+    /// similar to the loan GUI, to allow more than the hard cap here.
+    /// </summary>
     private readonly int MAX_GUNS = 9;
+
     /// <summary>
     /// Dialog options for the shopkeeper, selected at random.
     /// </summary>
@@ -52,7 +100,8 @@ public class ShopScript : MonoBehaviour {
     /// <summary>
     /// Detects the player and shows the tutorial if not already seen.
     /// </summary>
-    void OnTriggerEnter(Collider col) {
+    /// <param name="col">collider that entered the trigger zone</param>
+    private void OnTriggerEnter(Collider col) {
         if (col.gameObject.tag == "Player") {
             playerIsInTriggerZone = true;
             if (!Settings.values.sawShopTutorial) {
@@ -72,7 +121,11 @@ public class ShopScript : MonoBehaviour {
         Time.timeScale = 1;
     }
 
-    void OnTriggerExit(Collider col) {
+    /// <summary>
+    /// Handles colliders leaving the trigger zone.
+    /// </summary>
+    /// <param name="col">collider that left the trigger zone</param>
+    private void OnTriggerExit(Collider col) {
         if (col.gameObject.tag == "Player") {
             playerIsInTriggerZone = false;
         }
@@ -80,14 +133,17 @@ public class ShopScript : MonoBehaviour {
 
     /// <summary>
     /// Sets up the shops inventory and shooting script for later use.
-    /// Generates weapons for the shops inventory whenever the player enters the hub.
+    /// Generates weapons for the shop's inventory whenever the player enters
+    /// the hub.
     /// </summary>
-    void Start() {
+    private void Start() {
         audioS = GetComponent<AudioSource>();
         shopPanel.SetActive(false);
         playerShoot = GameObject.FindGameObjectWithTag("Player").GetComponentInChildren<PlayerShoot>();
         playerInventory = GameObject.FindGameObjectWithTag("Player Inventory").GetComponentInChildren<Inventory>();
         genny = GetComponent<WeaponGenerator>();
+
+        // On the first day, the weapons generated should be reasonably affordable, otherwise, the game is impossible or unusually difficult, as the player would be forced to take out a payday loan
         do {
             generateNewWeapons();
         } while (!affordableWeaponsDayZero());
@@ -138,22 +194,33 @@ public class ShopScript : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Display the weapon information. Should be attached to an event listener
+    /// that deals with hovering over the inventory button.
+    /// </summary>
+    /// <param name="slot">associated inventory slot</param>
     public void hoverInventory(int slot) {
         if (!inventorySlots[slot].purchased) {
             inventorySlots[slot].infoBlock.SetActive(true);
         }
     }
 
+    /// <summary>
+    /// Hide the previously-displayed weapon information. Should be attached to
+    /// an event listener that deals with moving the cursor off of the inventory
+    /// button.
+    /// </summary>
+    /// <param name="slot">associated inventory slot</param>
     public void blurInventory(int slot) {
         inventorySlots[slot].infoBlock.SetActive(false);
     }
 
-
     /// <summary>
-    /// Determines if the player is in range of the shop and pressing the interact key.
+    /// Determines if the player is in range of the shop and pressing the
+    /// interact key.
     /// If so, it activates the menu and unlocks the cursor.
     /// </summary>
-    void Update() {
+    private void Update() {
         if (playerIsInTriggerZone) {
             if (Input.GetKeyDown(Settings.interactKey) && !tutorial.activeSelf) {
                 Time.timeScale = 0;
@@ -174,7 +241,7 @@ public class ShopScript : MonoBehaviour {
     /// Attempts to purchase a weapon and displays dialog based on the result
     /// of the attempt.
     /// </summary>
-    /// <param name="slot"></param>
+    /// <param name="slot">associated inventory slot</param>
     public void purchaseWeapon(int slot) {
         ShopInventorySlot shopSlot = inventorySlots[slot];
         GameObject selection = inventory[slot];
@@ -207,8 +274,8 @@ public class ShopScript : MonoBehaviour {
     }
 
     /// <summary>
-    /// On click this method activates, granting the user control of
-    /// the mouse and returning them to the hub.
+    /// Handles exiting the weapon shop by hiding GUI panels and resetting
+    /// player state.
     /// </summary>
     public void BackClick()
     {
@@ -220,13 +287,21 @@ public class ShopScript : MonoBehaviour {
         Time.timeScale = 1;
     }
 
-    // Debug stuff!!!
+    /// <summary>
+    /// Debug function. Update the StateManager.timesEntered value.
+    /// This value affects weapon generation.
+    /// </summary>
+    /// <param name="inp">input field GUI element</param>
     public void setStateTimesEntered(TMP_InputField inp) {
         int val = int.Parse(inp.text);
         StateManager.timesEntered = val;
         Debug.Log($"StateManager.timesEntered: {StateManager.timesEntered}");
     }
 
+    /// <summary>
+    /// Debug function. Update the StateManager.value.totalFloorsVisited value.
+    /// This value affects weapon generation.
+    /// </summary>
     public void setStateTotalFloors(TMP_InputField inp) {
         int val = int.Parse(inp.text);
         StateManager.totalFloorsVisited = val;
@@ -236,7 +311,7 @@ public class ShopScript : MonoBehaviour {
 
 /// <summary>
 /// Data for each shop inventory slot. Shows some basic text and data
-/// about the weapon in question
+/// about the weapon in question.
 /// </summary>
 [System.Serializable]
 public class ShopInventorySlot {

@@ -2,18 +2,41 @@
 using FiscalShock.Demo;
 using FiscalShock.GUI;
 
+/// <summary>
+/// Enables some debug commands/"cheats" used to help developers
+/// test or demonstrate the game.
+/// </summary>
 public class Cheats : MonoBehaviour {
+    [Tooltip("Key to press to teleport to the escape portal. Must be lowercase, as Unity's old input system expects it.")]
     public string teleportToEscapeKey = "f2";
-    public string teleportToDelveKey = "f3";
-    public string robinHood = "f1";
-    public string toggleGraphMesh = "f4";
-    public string enableWallDestruction = "f8";
-    public GameObject player;
-    public PlayerMovement playerMovement;
 
+    [Tooltip("Key to press to teleport to the delve portal. Must be lowercase, as Unity's old input system expects it.")]
+    public string teleportToDelveKey = "f3";
+
+    [Tooltip("Key to press to add cash. Must be lowercase, as Unity's old input system expects it.")]
+    public string robinHood = "f1";
+
+    [Tooltip("Key to press to teleport to toggle the graph rendering. Must be lowercase, as Unity's old input system expects it.")]
+    public string toggleGraphMesh = "f4";
+
+    [Tooltip("Key to press to enable wall destruction. Must be lowercase, as Unity's old input system expects it.")]
+    public string enableWallDestruction = "f8";
+
+    /// <summary>
+    /// Reference to the player movement script. Needed to use the
+    /// teleport function.
+    /// </summary>
+    public PlayerMovement playerMovement { get; set; }
+
+    /// <summary>
+    /// Whether the player can currently destroy walls.
+    /// </summary>
     public bool destroyWalls;
 
-    void Update() {
+    /// <summary>
+    /// Handle input on each frame.
+    /// </summary>
+    private void Update() {
         if (Input.GetKeyDown(teleportToEscapeKey)) {
             GameObject escape = GameObject.Find("Escape Point");
             Vector3 warpPoint = escape.transform.position;

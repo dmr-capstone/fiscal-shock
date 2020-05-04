@@ -2,70 +2,82 @@
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Here is the tutorial I followed:
-/// Player Movement: https://www.youtube.com/watch?v=_QajrabyTJc&t=1s
+/// Translates user input into player movement (jumping and running).
+/// References:
+/// Player Movement: https://www.youtube.com/watch?v=_QajrabyTJc&amp;t=1s
 /// Character Controller documentation: https://docs.unity3d.com/Manual/class-CharacterController.html
 /// </summary>
-
 public class PlayerMovement : MonoBehaviour
 {
+    [Tooltip("Reference to the player's character controller")]
     public CharacterController controller;
 
-    /// <summary>
-    /// References to control the attributes of movement
-    /// </summary>
+    [Tooltip("Ground movement speed of the player.")]
     public float speed = 12f;
+
+    [Tooltip("Gravity value, used to improve jump physics.")]
     public float gravity = -50f;
+
+    [Tooltip("Jump height.")]
     public float jumpBy = 1.5f;
 
-    
-    /// <summary>
-    /// Reference to ground body that checks if it has touched a ground layer.
-    /// </summary>
+    [Tooltip("Reference to a ground check object ('feet') that helps determine whether the player is on solid ground.")]
     public Transform groundCheck;
+
+    [Tooltip("Maximum allowable distance from the ground object to solid ground (in any direction).")]
     public float groundDistance = 0.4f;
 
+    [Tooltip("Current velocity of the player.")]
+    public Vector3 velocity;
+
     /// <summary>
-    /// Reference to ground layer, obstacle and decoration masks
+    /// Whether the player is currently on solid ground.
     /// </summary>
+    private bool isGrounded;
+
+    [Tooltip("Reference to an input action object from Unity's new input system.")]
+    public InputActionAsset inputActions;
+
+    [Header("Grounded (Jump-Enabled) Layers")]
     public LayerMask groundMask;
     public LayerMask obstacleMask;
     public LayerMask decorationMask;
 
     /// <summary>
-    /// References for the keyboard input, check if you're touching the ground and velocity
-    /// </summary>
-    public Vector3 velocity;
-    bool isGrounded;
-    public InputActionAsset inputActions;
-
-    /// <summary>
-    /// References to movement and jumping by player
+    /// 2D movement based on input events
     /// </summary>
     private Vector2 movement;
+
+    /// <summary>
+    /// Whether the player is currently jumping
+    /// </summary>
     private bool jumping;
 
-    
     /// <summary>
-    /// Assigns the input system configuration to the player's input controller
+    /// Assigns the input system configuration to the player's input controller.
+    /// The new input system is currently only used for jumping. 2D axis
+    /// movement with the new system handles slightly differently and was not
+    /// implemented fully.
     /// </summary>
     /// <returns></returns>
-    void Awake() {
+    private void Awake() {
         gameObject.GetComponent<PlayerInput>().actions = inputActions;
     }
 
-
     /// <summary>
-    /// Player moves based off Input action
+    /// Updates the 2D movement vector, based on the new input system event
+    /// handling.
+    /// This value is not currently used for ground movement.
     /// </summary>
-    /// <param name="cont"></param>
-    /// <returns></returns>
+    /// <param name="cont">context</param>
     public void OnMovement(InputAction.CallbackContext cont) {
         movement = cont.ReadValue<Vector2>();
     }
 
     /// <summary>
-    /// Player jumps based off Input action
+    /// Updates whether the player is currently jumping, based on the new input
+    /// system event handling.
+    /// This value is used to allow the player to jump.
     /// </summary>
     /// <param name="cont"></param>
     /// <returns></returns>
@@ -74,64 +86,48 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
-    /// Update is called once per frame
+    /// Process inputs or states updated by input system event handling.
     /// </summary>
-    /// <returns></returns>
-    void Update()
+    private void Update()
     {
-
-        /// <summary>
-        /// Creates sphere around object to check if it has collided with a ground layer
-        /// </summary>
+        // Creates sphere around object to check if it has collided with a ground layer
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance,groundMask | obstacleMask | decorationMask);
 
-        /// <summary>
-        /// Resets velocity, so it doesnt go down forever
-        /// </summary>
-        if(isGrounded && velocity.y < 0)
+        // Resets velocity, so it doesn't go down forever
+        if (isGrounded && velocity.y < 0)
         {
             velocity.y = -2f;
         }
 
-        /// <summary>
-        /// Gets input from user
-        /// </summary>
+        // Old Unity input system: get the 2D movement values
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
-        /// <summary>
-        /// Creates direction where user wants to move
-        /// </summary>
+        // Calculate direction vector based on user input and current facing
         Vector3 move = transform.right * x + transform.forward * z;
 
-        ///<summary>
-        /// Moves the player using move, speed and Time.deltaTime(Frame Rate independent)
-        /// </summary>
+        // Move the player character controller, adjusting for movement speed and time since the last Update()
         controller.Move(move * speed * Time.deltaTime);
 
-        ///<summary>
-        /// Only Jump if player is grounded, velocity.y brings player down
-        /// </summary>
+        // Only Jump if player is grounded, velocity.y brings player down
         if(jumping && isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpBy * -2f * gravity);
         }
 
-        /// <summary>
-        /// Velocity for when user is falling down, using gravity and Time.deltaTime.
-        /// </summary>
+        // Velocity for when user is falling down, using gravity and Time.deltaTime.
         velocity.y += gravity * Time.deltaTime;
 
-        ///<summary>
-        /// Lets user fall down based on velocity
-        /// </summary>
+        // Apply downward gravity to keep the player from flying away.
         controller.Move(velocity * Time.deltaTime);
     }
 
     /// <summary>
-    /// Teleports the player to a specific destination
+    /// Teleports the player to a specific destination. The character controller
+    /// must be disabled to move the player transform, or else the player
+    /// will snap back into place instantly.
     /// </summary>
-    /// <param name="destination"></param>
+    /// <param name="destination">world space position to teleport to</param>
     /// <returns></returns>
     public void teleport(Vector3 destination) {
         controller.enabled = false;

@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// FPS camera, controlled by moving the mouse.
+/// </summary>
 public class MouseLook : MonoBehaviour
 {
     public bool lockCursorToGame = true;
@@ -11,12 +14,14 @@ public class MouseLook : MonoBehaviour
     private float xRotation = 0f;
     private CursorLockMode lastCursorLockState;
 
-    public void Start() {
+    private void Start() {
         Settings.lockCursorState(this);
     }
 
-    public void Update() {
-        // Moves the camera with the mouse, uses Time.deltaTime for FPS correction (Independent of current Frame rate)
+    /// <summary>
+    /// Moves the camera with the mouse, uses Time.deltaTime for FPS correction (Independent of current Frame rate)
+    /// </summary>
+    private void Update() {
         float mouseX = Input.GetAxis("Mouse X") * Settings.mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * Settings.mouseSensitivity * Time.deltaTime;
 
@@ -33,8 +38,8 @@ public class MouseLook : MonoBehaviour
     /// Release cursor and freeze time when the game is no longer in
     /// focus.
     /// </summary>
-    /// <param name="focused"></param>
-    public void OnApplicationFocus(bool focused) {
+    /// <param name="focused">whether the game window is now in focus</param>
+    private void OnApplicationFocus(bool focused) {
         if (!focused) {  // game window is no longer in focus
             lastCursorLockState = Cursor.lockState;
             Settings.forceUnlockCursorState();

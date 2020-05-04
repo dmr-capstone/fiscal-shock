@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Behavior of the portal that sends the player deeper into the dungeon.
+    /// </summary>
     public class Delve : MonoBehaviour {
         private GameObject loadingScreen;
         private LoadingScreen loadScript;

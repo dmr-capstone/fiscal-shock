@@ -10,22 +10,43 @@ using UnityEngine.UI;
 /// like invincibility and the player flashlight.
 /// </summary>
 public class PlayerHealth : MonoBehaviour {
+    /// <summary>
+    /// Reference to the hit vignette on the HUD.
+    /// </summary>
     private GameObject hitVignette;
+
+    /// <summary>
+    /// Modifier on how long to display the hit vignette, based on damage
+    /// taken.
+    /// </summary>
     private float timeMultiplier = 0.01f;
+
+    [Tooltip("Whether the player is currently invincible. Public to expose it in the inspector during development and debugging.")]
     public bool invincible;
+
+    /// <summary>
+    /// Reference to the player's flashlight. The flashlight color is used to
+    /// inform the player that they are invincible by coloring it green.
+    /// </summary>
     private Light playerFlashlight;
 
+    /// <summary>
+    /// Initialize references and the default state.
+    /// </summary>
     private void Start() {
         playerFlashlight = GameObject.FindGameObjectWithTag("Player Flashlight").GetComponent<Light>();
         resetVignette();
     }
 
+    /// <summary>
+    /// Update the reference to the vignette object and hide it.
+    /// </summary>
     public void resetVignette(){
         hitVignette = GameObject.FindGameObjectWithTag("Player Hit Vignette");
         hitVignette.SetActive(false);
     }
 
-    void OnCollisionEnter(Collision col) {
+    private void OnCollisionEnter(Collision col) {
         if (col.gameObject.tag == "Enemy Projectile") {
             BulletBehavior bullet = col.gameObject.GetComponent<BulletBehavior>();
             if (bullet.hitSomething) {
@@ -37,10 +58,10 @@ public class PlayerHealth : MonoBehaviour {
     }
 
     /// <summary>
-    /// When called, enables the HUD item to show damage for the passed amount of time.
+    /// Display the hit vignette HUD object (red effect) to inform the
+    /// player that they have taken damage.
     /// </summary>
-    /// <param name="duration"></param>
-    /// <returns></returns>
+    /// <param name="duration">in seconds, how long to display the vignette</param>
     private IEnumerator showHitVignette(float duration) {
         hitVignette.SetActive(true);
         yield return new WaitForSeconds(duration);
@@ -74,6 +95,7 @@ public class PlayerHealth : MonoBehaviour {
             playerFlashlight = GameObject.FindGameObjectWithTag("Player Flashlight").GetComponent<Light>();
         }
         invincible = true;
+        // Set the color to green as an indicator that something's up
         playerFlashlight.color = new Color(0, 1, 0.75f, 0.5f);
         yield return new WaitForFixedUpdate();  // そして時は動き出す…
         yield return new WaitForSeconds(duration);
@@ -83,8 +105,8 @@ public class PlayerHealth : MonoBehaviour {
     }
 
     /// <summary>
-    /// Used to disable invincibility after players have a few seconds to position
-    /// or if they are currently attacking something.
+    /// Used to disable invincibility after players have a few seconds to
+    /// position themselves, or if they try to attack an enemy.
     /// </summary>
     private void Update() {
         // Disable invincibility:

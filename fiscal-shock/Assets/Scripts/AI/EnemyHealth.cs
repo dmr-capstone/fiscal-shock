@@ -4,18 +4,23 @@ using System.Collections.Generic;
 using FiscalShock.Procedural;
 using System;
 
-//This script controls the health of enemy bots
+/// <summary>
+/// Manages AI health and reactions to being damaged.
+/// </summary>
 public class EnemyHealth : MonoBehaviour {
+    [Tooltip("Base/maximum health of this enemy.")]
     public float startingHealth = 30;
+    [Tooltip("Reference to the particle effect used for visual hit feedback (bullets).")]
     public GameObject explosion;
+    [Tooltip("Reference to the particle effect used for visual hit feedback (missiles).")]
     public GameObject bigExplosion;
+    [Tooltip("Audio clip played when this enemy is struck.")]
     public AudioClip hitSoundClip;
+    [Tooltip("Reference to audio source that handles playing sound effects.")]
     public AudioSource hitSound;
+    [Tooltip("Base cash amount earned when this enemy is defeated.")]
     public float pointValue = 20;
 
-    /// <summary>
-    /// Current health
-    /// </summary>
     private float currentHealth;
 
     /// <summary>
@@ -24,7 +29,7 @@ public class EnemyHealth : MonoBehaviour {
     /// </summary>
     private GameObject lastBulletCollision;
 
-    [Tooltip("Reference to this bot's own animation manager script")]
+    [Tooltip("Reference to this bot's own animation manager script.")]
     public AnimationManager animationManager;
 
     /// <summary>
@@ -52,7 +57,7 @@ public class EnemyHealth : MonoBehaviour {
     /// </summary>
     private readonly int bigExplosionLimit = 6;
 
-    [Tooltip("Reference to this bot's stun effect object")]
+    [Tooltip("Reference to this bot's stun effect object.")]
     public GameObject stunEffect;
 
     /// <summary>
@@ -79,7 +84,11 @@ public class EnemyHealth : MonoBehaviour {
     [Tooltip("When ambushed, the enemy will try to alert other enemies willing to assist within this radius.")]
     public float cryForHelpRadius;
 
-    void Start() {
+    /// <summary>
+    /// Initialize variables and references to external objects and create
+    /// object pools.
+    /// </summary>
+    private void Start() {
         feed = GameObject.FindGameObjectWithTag("HUD").GetComponent<FeedbackController>();
         currentHealth = startingHealth;
         ragdoll = gameObject.GetComponent<Rigidbody>();
@@ -99,7 +108,10 @@ public class EnemyHealth : MonoBehaviour {
         }
     }
 
-    void Update() {
+    /// <summary>
+    /// Update values every frame.
+    /// </summary>
+    private void Update() {
         if (enmityActive) {
             enmityCounter += Time.deltaTime;
         }
@@ -108,12 +120,22 @@ public class EnemyHealth : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Fire off the stun routine if this enemy is not already dead.
+    /// Should be called after taknig damage to prevent stunned corpses.
+    /// </summary>
+    /// <param name="duration">time to remain stunned for</param>
     public void stun(float duration) {
         if (!dead) {
             StartCoroutine(stunRoutine(duration));
         }
     }
 
+    /// <summary>
+    /// Actual stun routine, run asynchronously. Disables other AI behavior for
+    /// the duration of the stun.
+    /// </summary>
+    /// <param name="duration">time to remain stunned for</param>
     private IEnumerator stunRoutine(float duration) {
         stunEffect.SetActive(true);
         EnemyShoot es = gameObject.GetComponentInChildren<EnemyShoot>();
@@ -130,10 +152,20 @@ public class EnemyHealth : MonoBehaviour {
         yield return null;
     }
 
+    /// <summary>
+    /// Processes this enemy being struck by something.
+    /// If the enemy is defeated, the player receives money, a death
+    /// animation plays, and this enemy is destroyed.
+    /// If the enemy was not active (enemy is ambushed), the enemy
+    /// will call for help from nearby enemies.
+    /// </summary>
+    /// <param name="damage">amount of damage received</param>
+    /// <param name="paybackMultiplier">modifier on cash earned from defeating this enemy; zero if the player should not gain more than the base value; currently, this is only the case when the enemy is defeated by an exploding object</param>
     public void takeDamage(float damage, int paybackMultiplier=0) {
         float prevHealth = currentHealth;
         currentHealth -= damage;
 
+        // Process enemy defeat
         if (currentHealth <= 0 && !dead) {
             // Temporary boost to earnings for usability testing as we don't have time to fully adjust enemy stats and it's sometimes very hard to earn cash
             float temporaryBonusMod = Gaussian.next(1.6f, 0.5f);
@@ -148,13 +180,24 @@ public class EnemyHealth : MonoBehaviour {
             dead = true;
             feed.profit(profit);
         }
+
+        // Process ambush reaction asynchronously
         if (!enmityActive) {
             StartCoroutine(cryForHelp(transform.position));
         }
+
+        // Activate enemy hostility
         enmityActive = true;
         enmityCounter = 0;
     }
 
+    /// <summary>
+    /// Sends out a delayed call for help from the original position where the
+    /// enemy was struck. The call is delayed so that the player can attempt to
+    /// defeat the enemy before it successfully attracts its allies.
+    /// </summary>
+    /// <param name="location"></param>
+    /// <returns></returns>
     private IEnumerator cryForHelp(Vector3 location) {
         yield return new WaitForSeconds(1f * UnityEngine.Random.Range(1f, 3f));
 
@@ -162,6 +205,7 @@ public class EnemyHealth : MonoBehaviour {
             yield return null;
         }
 
+        // If there are any willing assistants in the cry for help radius around the original location where I was hit, activate their hostility
         foreach (Collider col in Physics.OverlapSphere(location, cryForHelpRadius, (1 << gameObject.layer))) {
             if (col.gameObject.tag == "Assistant") {
                 EnemyHealth ally = col.gameObject.GetComponent<EnemyHealth>();
@@ -172,6 +216,12 @@ public class EnemyHealth : MonoBehaviour {
         yield return null;
     }
 
+    /// <summary>
+    /// Play particle effect on being struck by pulling it from the object
+    /// pool. Bigger explosions are louder.
+    /// </summary>
+    /// <param name="queue">explosion queue to pull from</param>
+    /// <param name="volumeMultiplier">modifier on audio feedback</param>
     public void showDamageExplosion(Queue<GameObject> queue, float volumeMultiplier = 0.65f) {
         // Play sound effect and explosion particle system
         if (queue == null) {
@@ -187,7 +237,12 @@ public class EnemyHealth : MonoBehaviour {
         StartCoroutine(explode.GetComponent<Explosion>().timeout());
     }
 
-    void OnCollisionEnter(Collision col) {
+    /// <summary>
+    /// Handle collision events. Only player bullets and missiles are accounted
+    /// for, so enemies currently can't hurt each other.
+    /// </summary>
+    /// <param name="col">collision event data</param>
+    private void OnCollisionEnter(Collision col) {
         if (col.gameObject.tag == "Bullet" || col.gameObject.tag == "Missile") {
             if (col.gameObject == lastBulletCollision) {
                 return;

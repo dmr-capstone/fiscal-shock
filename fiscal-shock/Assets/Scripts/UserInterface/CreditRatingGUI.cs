@@ -4,20 +4,46 @@ using UnityEngine.UI;
 using TMPro;
 using System;
 
-public class CreditRating : MonoBehaviour {
+/// <summary>
+/// GUI visualization for the player's credit score/credit rating.
+/// </summary>
+public class CreditRatingGUI : MonoBehaviour {
+    [Tooltip("Reference to the bar section for abysmal (bottom)")]
     public Image abysmal;
+
+    [Tooltip("Reference to the bar section for poor")]
     public Image poor;
+
+    [Tooltip("Reference to the bar section for fair")]
     public Image fair;
+
+    [Tooltip("Reference to the bar section for good")]
     public Image good;
+
+    [Tooltip("Reference to the bar section for excellent (top)")]
     public Image excellent;
+
+    [Tooltip("Reference to text object that displays the player's credit rating")]
     public TextMeshProUGUI texto;
+
+    [Tooltip("Reference to the text object that displays the difference between the last credit score and the current credit score")]
     public TextMeshProUGUI delta;
 
-    public void Awake() {
+    /// <summary>
+    /// Delayed update of the rating bar. There were race conditions when the
+    /// bar was updated immediately. This does lead to the bar showing invalid
+    /// data right after the player loads into the hub for the first time, if
+    /// they pause immediately. It will be updated after 1 second passes while
+    /// time is flowing.
+    /// </summary>
+    private void Awake() {
         Invoke("updateRatingBar", 1f);
     }
 
-    public void OnEnable() {
+    /// <summary>
+    /// Update the state manager reference when this script is enabled.
+    /// </summary>
+    private void OnEnable() {
         StateManager.creditBarScript = this;
     }
 
@@ -25,9 +51,7 @@ public class CreditRating : MonoBehaviour {
     /// Refresh the credit rating bar on the pause menu.
     /// </summary>
     public void updateRatingBar() {
-        //gameObject.SetActive(true);
-        //gameObject.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
-
+        // The images should all have vertical fill enabled, so we can give a visualization of the current credit score, without the player needing to worry about an exact value.
         excellent.fillAmount = Mathf.Clamp01((StateManager.creditScore - StateManager.ExcellentCredit.min) / StateManager.ExcellentCredit.range);
         good.fillAmount = Mathf.Clamp01((StateManager.creditScore - StateManager.GoodCredit.min) / StateManager.GoodCredit.range);
         fair.fillAmount = Mathf.Clamp01((StateManager.creditScore - StateManager.FairCredit.min) / StateManager.FairCredit.range);
@@ -47,7 +71,8 @@ public class CreditRating : MonoBehaviour {
             texto.color = abysmal.color;
         }
         texto.text = StateManager.currentRating.rating;
-        //gameObject.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+
+        // Update the change from the last score to the new score
         int deltint = Mathf.RoundToInt(StateManager.creditScore - StateManager.lastCreditScore);
         delta.text = $"{(deltint > 0? "+" : "")}{deltint}";
         if (StateManager.lastCreditScore < StateManager.AbysmalCredit.min) {
@@ -60,11 +85,16 @@ public class CreditRating : MonoBehaviour {
         } else {
             delta.color = Color.white;
         }
-        //gameObject.SetActive(false);
+
         StartCoroutine(showCreditDelta(deltint));
     }
 
-    public IEnumerator showCreditDelta(int deltint) {
+    /// <summary>
+    /// Display and fade text over time with the credit score change after the
+    /// player leaves the dungeon.
+    /// </summary>
+    /// <param name="deltint">change in credit score since last check</param>
+    private IEnumerator showCreditDelta(int deltint) {
         if (StateManager.income.Count > 0) {
             TextMeshProUGUI pt = GameObject.FindGameObjectWithTag("Player Text").GetComponent<TextMeshProUGUI>();
             if (deltint > 0) {

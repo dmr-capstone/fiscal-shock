@@ -6,30 +6,77 @@ using UnityEngine;
 using TMPro;
 
 /// <summary>
-/// Based on https://gist.github.com/nickpettit/a78cc0a9483c85212a23
+/// Handles asynchronous loading of scenes, so we can have a loading screen
+/// that displays loading progress (to the best of Unity's ability).
+/// Adapted from https://gist.github.com/nickpettit/a78cc0a9483c85212a23
 /// </summary>
 public class LoadingScreen : MonoBehaviour {
-    string nextScene = "Hub";
+    /// <summary>
+    /// Reference to the next scene to load. Must be the filename of the
+    /// scene to load.
+    /// </summary>
+    private string nextScene = "Hub";
 
+    [Tooltip("Reference to the main loading text body.")]
     public TextMeshProUGUI loadingText;
+
+    [Tooltip("Reference to the smaller instructional text at the bottom of the loading screen")]
     public TextMeshProUGUI clickText;
+
+    [Tooltip("Reference to the slider GUI element used to create a progress bar effect")]
     public Slider progressBar;
+
+    /// <summary>
+    /// Singleton instance
+    /// </summary>
     public static LoadingScreen loadScreenInstance { get; private set; }
+
+    /// <summary>
+    /// Reference to the current async loading operation
+    /// </summary>
     private AsyncOperation async;
+
+    [Tooltip("Reference to the loading screen GUI panel")]
     public Canvas loadCanvas;
+
+    [Tooltip("Color of the progress bar when the next level is still loading")]
     public Color loadingColor;
+
+    [Tooltip("Color of the progress bar when the next level has finished loading as much as it can asynchronously")]
     public Color doneColor;
+
+    [Tooltip("Image used for the progress bar fill. Gets colored by the aforementioned colors.")]
     public Image progressFill;
+
+    [Tooltip("Reference to text object displaying the progress of loading as a percent")]
     public TextMeshProUGUI percentText;
+
+    /// <summary>
+    /// Last scene loaded
+    /// </summary>
     public string previousScene { get; private set; }
+
+    [Tooltip("Reference to the tombstone image. Used when the player has been defeated.")]
     public GameObject tombstone;
 
+    /// <summary>
+    /// Story text to display when the player is loading the temple level.
+    /// </summary>
     private readonly string templeStory = "Hostile robots are excavating the Ruins of Tehamahouti, stealing every shiny object they can get their hands on. Clear out the robots before it becomes a total archaeological loss! Oh, and try not to die.";
 
+    /// <summary>
+    /// Story text to display when the player is loading the mines level.
+    /// </summary>
     private readonly string mineStory = "We have traced a cache of black market gold and gemstones to a series of mines. Naturally, BOTCORP is the culprit. Due to the CEO's affiliation and close ties with illegal markets, we believe that he is storing stolen artifacts for resale here, as well. Your job is the same as always: crush the bots. Our specialists will come in and take care of the rest.";
 
+    /// <summary>
+    /// Default text to display on loading. Used when the story text isn't.
+    /// </summary>
     private readonly string defaultText = "Loading...";
 
+    /// <summary>
+    /// List of phrases to display on the tombstone when the player is defeated
+    /// </summary>
     private readonly string[] eulogies = {
         "Suffocated under a pile of loans",
         "peperony and chease",
@@ -50,7 +97,11 @@ public class LoadingScreen : MonoBehaviour {
         "Dead broke"
     };
 
-    void Awake() {
+    /// <summary>
+    /// Singleton management. Note that this singleton isn't added to the state
+    /// manager's list. We still want to use the loading screen when possible.
+    /// </summary>
+    private void Awake() {
         if (loadScreenInstance != null && loadScreenInstance != this) {
             Destroy(this.gameObject);
             return;
@@ -62,13 +113,20 @@ public class LoadingScreen : MonoBehaviour {
         // Do not add to StateManager.singletons unless you never want to use the load screen to get to the menu
     }
 
-    void Start() {
+    /// <summary>
+    /// Initialize variables and hide the loading screen by default.
+    /// </summary>
+    private void Start() {
         loadCanvas.enabled = false;
         loadingText.text = defaultText;
         clickText.enabled = false;
     }
 
-    void Update() {
+    /// <summary>
+    /// Updates the progress bar each frame when a level is loading.
+    /// Also handles input to enable activation of the next scene.
+    /// </summary>
+    private void Update() {
         // If the new scene has started loading...
         if (async != null) {
             // ...then pulse the transparency of the loading text to let the player know that the computer is still working.
@@ -90,6 +148,11 @@ public class LoadingScreen : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Restarts time asynchronously by waiting real-time seconds. Some
+    /// race conditions and bad things seemed to happen when time was
+    /// instantly enabled.
+    /// </summary>
     private IEnumerator restartTime() {
         yield return new WaitForSecondsRealtime(0.5f);
         Time.timeScale = 1;
@@ -110,6 +173,10 @@ public class LoadingScreen : MonoBehaviour {
         StartCoroutine(loadScene());
     }
 
+    /// <summary>
+    /// Main function to start loading a scene. Updates the load screen text
+    /// and starts the actual scene load.
+    /// </summary>
     private IEnumerator<WaitForSeconds> loadScene() {
         Debug.Log("Scene load starting");
         tombstone.SetActive(false);

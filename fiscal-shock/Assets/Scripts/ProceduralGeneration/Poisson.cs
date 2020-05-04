@@ -128,6 +128,13 @@ namespace FiscalShock.Procedural {
             return x > -1 && y > -1 && x < cols && y < rows;
         }
 
+        /// <summary>
+        /// Generates points on a 2D plane using the Poisson disc sampling
+        /// algorithm.
+        /// </summary>
+        /// <param name="minDistanceBetweenSamples">minimum distance allowed between points</param>
+        /// <param name="width">max width of the bounding box where points can be generated</param>
+        /// <param name="height">max height of the bounding box where points can be generated</param>
         public Poisson(float minDistanceBetweenSamples, int width, int height) {
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();

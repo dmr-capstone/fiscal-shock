@@ -4,7 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using FiscalShock.Procedural;
 
-//This script holds information about a weapon
+/// <summary>
+/// Contains parameters for individual weapons and also handles logic behind
+/// this weapon's attack ability ("firing the weapon")
+/// </summary>
 public class WeaponStats : MonoBehaviour {
     [Header("Information")]
     public string prefix;
@@ -103,7 +106,7 @@ public class WeaponStats : MonoBehaviour {
     /// <summary>
     /// Enum to string for FirearmAction
     /// </summary>
-    /// <returns></returns>
+    /// <returns>enum as string</returns>
     public string actionToString() {
         string actions;
         switch (action) {
@@ -120,6 +123,7 @@ public class WeaponStats : MonoBehaviour {
     /// <summary>
     /// Enum to string for ProjectileType
     /// </summary>
+    /// <returns>enum as string</returns>
     public string projectileTypeToString() {
         string projtype;
         switch (projectileType) {
@@ -134,13 +138,16 @@ public class WeaponStats : MonoBehaviour {
     }
 
     /// <summary>
-    /// Debug string
+    /// Debug ToString to print info about the weapon in the console.
     /// </summary>
     public override string ToString() {
         return $"Name: {fullName}, Family: {weaponFamily}, Value: {price}, Strength: {strength}, Deviation: {deviation}, Delay: {fireDelay}, Bullet Cost: {bulletCost}, Action: {actionToString()}, Projectile: {projectileTypeToString()}, Crosshair: {showCrosshair}";
     }
 
-    void Start() {
+    /// <summary>
+    /// Initializes references and sets up projectile object pools.
+    /// </summary>
+    private void Start() {
         if (bulletPrefab == null) {
             return;
         }
@@ -180,7 +187,7 @@ public class WeaponStats : MonoBehaviour {
     /// should really be affected by deviation. (Would probably be almost the
     /// same code as the rotation vector in fireBullet)
     /// </summary>
-    /// <returns></returns>
+    /// <returns>selected homing target</returns>
     private HomingTargets getHomingTargets() {
         Transform target = null;
         Vector3 localTarget = Vector3.zero;

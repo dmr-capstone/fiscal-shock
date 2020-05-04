@@ -2,12 +2,20 @@ using UnityEngine;
 
 namespace FiscalShock.Procedural {
     /// <summary>
-    /// Gaussian (normal) pseudorandom number generator. Useful when you want
-    /// outliers to be rare.
+    /// Gaussian (normal) distribution pseudorandom number generator. Useful
+    /// when you want outliers to be rare and most values to fall around a
+    /// mean value.
     ///
-    /// <para>Taken from https://stackoverflow.com/a/218600</para>
+    /// <para>Adapted from https://stackoverflow.com/a/218600</para>
     /// </summary>
     public static class Gaussian {
+        /// <summary>
+        /// Get a random float from the Gaussian distribution described by
+        /// the function arguments
+        /// </summary>
+        /// <param name="mean">most values fall around this point</param>
+        /// <param name="stdDev">standard deviation of the distribution; most numbers generated will be within this value on either side of the mean (+/-)</param>
+        /// <returns></returns>
         public static float next(float mean, float stdDev) {
             float u1 = 1.0f - Random.value;
             float u2 = 1.0f - Random.value;

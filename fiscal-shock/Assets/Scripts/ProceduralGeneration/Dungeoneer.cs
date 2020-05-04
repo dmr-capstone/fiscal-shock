@@ -428,7 +428,6 @@ namespace FiscalShock.Procedural {
 
             // Attach any other stuff to player here
             Cheats cheater = GameObject.FindObjectOfType<Cheats>();
-            cheater.player = player;
             cheater.playerMovement = player.GetComponentInChildren<PlayerMovement>();
             InGameMenu menu = GameObject.FindObjectOfType<InGameMenu>();
             menu.player = player;

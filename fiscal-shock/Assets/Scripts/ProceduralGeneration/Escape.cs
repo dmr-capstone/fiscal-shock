@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Behavior of the escape portal that sends the player back to the Hub.
+    /// </summary>
     public class Escape : MonoBehaviour {
         private Animation anim;
         private GameObject loadingScreen;

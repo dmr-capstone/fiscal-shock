@@ -2,13 +2,13 @@
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Script for controlling the button on the win screen.
+/// Script for controlling the buttons on the win screen.
 /// </summary>
 public class WinScreen : MonoBehaviour {
     private GameObject loadingScreen;
     private LoadingScreen loadScript;
 
-    public void Start() {
+    private void Start() {
         Settings.forceUnlockCursorState();
         loadingScreen = GameObject.FindGameObjectWithTag("Loading Screen");
         loadScript = loadingScreen.GetComponent<LoadingScreen>();

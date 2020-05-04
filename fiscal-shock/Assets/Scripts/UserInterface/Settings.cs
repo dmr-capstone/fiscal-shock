@@ -2,15 +2,31 @@ using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
-/// Global settings used across many files
+/// Handles control of global game settings and cursor locking/unlocking.
 /// </summary>
 public static class Settings {
+    /// <summary>
+    /// Backing value field that can be serialized to JSON
+    /// </summary>
     public static SettingsValues values = new SettingsValues();
+
+    /// <summary>
+    /// Reference to the current owner of the cursor state mutex
+    /// </summary>
     public static MonoBehaviour cursorStateMutexOwner { get; private set; }
+
+    /// <summary>
+    /// Passthrough accesses of Settings.volume to the backing data class
+    /// </summary>
     public static float volume {
         get => values.volume;
         set => values.volume = value;
     }
+
+    /// <summary>
+    /// Passthrough accesses of Settings.mouseSensitivity to the backing
+    /// data class
+    /// </summary>
     public static float mouseSensitivity {
         get => values.mouseSensitivity;
         set => values.mouseSensitivity = value;
@@ -23,17 +39,32 @@ public static class Settings {
     public static string weaponTwoKey => values.weaponTwoKey;
     public static string hidePauseMenuKey => values.hidePauseMenuKey;
 
+    /// <summary>
+    /// Filename for the settings file.
+    /// <para>Linux: $XDG_CONFIG_HOME/unity3d/Download Moar RAM/fiscal-shock/</para>
+    /// <para>Windows: C:\Users\%USERNAME%\AppData\LocalLow\Download Moar RAM\fiscal-shock\</para>
+    /// </summary>
     private static readonly string settingsFilename = Application.persistentDataPath + "/settings.json";
 
+    /// <summary>
+    /// Serializes settings data class to JSON and write to file.
+    /// </summary>
     public static void saveSettings() {
         Utils.saveToJson(values, settingsFilename);
     }
 
+    /// <summary>
+    /// Load settings data from JSON.
+    /// </summary>
     public static void loadSettings() {
         Utils.loadFromJson(values, settingsFilename);
         updateCurrentSettings();
     }
 
+    /// <summary>
+    /// Updates all settings based on the current values of the backing
+    /// data.
+    /// </summary>
     public static void updateCurrentSettings() {
         Debug.Log("Updating all game settings...");
         // Apply default quality level settings first
@@ -66,6 +97,9 @@ public static class Settings {
         }
     }
 
+    /// <summary>
+    /// Reset configurable graphics settings to the quality defaults.
+    /// </summary>
     public static void resetToCurrentQualityDefaults() {
         values.overrideQualitySettings = false;
         updateCurrentSettings();
@@ -84,11 +118,20 @@ public static class Settings {
         values.shadowResolution = QualitySettings.shadowResolution;
     }
 
+    /// <summary>
+    /// Save settings to file and quit to desktop. Should be used whenever
+    /// something needs to close the game.
+    /// </summary>
     public static void quitToDesktop() {
         saveSettings();
         Application.Quit();
     }
 
+    /// <summary>
+    /// Cleans up the state manager and singletons. Should be used whenever
+    /// something wants to return to the main menu for a blank slate, without
+    /// closing the game entirely.
+    /// </summary>
     public static void quitToMainMenu() {
         LoadingScreen loading = GameObject.FindGameObjectWithTag("Loading Screen")?.GetComponentInChildren<LoadingScreen>();
 
@@ -111,8 +154,8 @@ public static class Settings {
     ///
     /// <para>Remember to free it with unlockCursorState so the mutex is released!</para>
     /// </summary>
-    /// <param name="caller"></param>
-    /// <returns></returns>
+    /// <param name="caller">script requesting lock</param>
+    /// <returns>whether the action was successful</returns>
     public static bool mutexLockCursorState(MonoBehaviour caller) {
         bool success = lockCursorState(caller);
         if (success) {
@@ -126,9 +169,8 @@ public static class Settings {
     ///
     /// <para>Remember to free it with lockCursorState so the mutex is released!</para>
     /// </summary>
-    /// </summary>
-    /// <param name="caller"></param>
-    /// <returns></returns>
+    /// <param name="caller">script requesting unlock</param>
+    /// <returns>whether the action was successful</returns>
     public static bool mutexUnlockCursorState(MonoBehaviour caller) {
         bool success = unlockCursorState(caller);
         if (success) {
@@ -140,8 +182,8 @@ public static class Settings {
     /// <summary>
     /// Attempts to lock the cursor state and disowns the mutex if the caller already owned it
     /// </summary>
-    /// <param name="caller"></param>
-    /// <returns></returns>
+    /// <param name="caller">script requesting lock</param>
+    /// <returns>whether the action was successful</returns>
     public static bool lockCursorState(MonoBehaviour caller) {
         if (cursorStateMutexOwner == null || cursorStateMutexOwner == caller) {
             Cursor.lockState = CursorLockMode.Locked;
@@ -156,8 +198,8 @@ public static class Settings {
     /// <summary>
     /// Attempts to unlock the cursor state and disowns the mutex if the caller already owned it
     /// </summary>
-    /// <param name="caller"></param>
-    /// <returns></returns>
+    /// <param name="caller">script requesting unlock</param>
+    /// <returns>whether the action was successful</returns>
     public static bool unlockCursorState(MonoBehaviour caller) {
         if (cursorStateMutexOwner == null || cursorStateMutexOwner == caller) {
             Cursor.lockState = CursorLockMode.None;
@@ -189,6 +231,9 @@ public static class Settings {
         Cursor.lockState = CursorLockMode.Locked;
     }
 
+    /// <summary>
+    /// Default quality preset
+    /// </summary>
     public static QualityPreset qualityPreset = DefaultQualitySettings.Default;
 
     /* stringified */
@@ -227,10 +272,22 @@ public static class Settings {
         "8x MSAA"
     };
 
+    /// <summary>
+    /// Based on the index in the dropdown menu, get the actual Resolution
+    /// object to update graphics settings.
+    /// </summary>
+    /// <param name="i">dropdown index selected</param>
+    /// <returns>corresponding Resolution</returns>
     public static Resolution getResolutionByIndex(int i) {
         return Screen.resolutions[i];
     }
 
+    /// <summary>
+    /// Returns a human-readable list of strings for all supported resolutions.
+    /// It's possible that this list has "duplicates" that are really different
+    /// refresh rates, as the refresh rate isn't added to the display string.
+    /// </summary>
+    /// <returns></returns>
     public static List<string> getSupportedResolutions() {
         List<string> res = new List<string>();
         foreach (Resolution r in Screen.resolutions) {
@@ -241,6 +298,7 @@ public static class Settings {
 }
 
 /// <summary>
+/// Defaults for the configurable graphics settings for each quality preset.
 /// Unity has no concept of "reset to the default of this quality preset,"
 /// so here we go...
 /// </summary>
@@ -302,6 +360,11 @@ public static class DefaultQualitySettings {
         shadowResolution = ShadowResolution.VeryHigh
     };
 
+    /// <summary>
+    /// Get the appropriate quality preset (based on dropdown selection)
+    /// </summary>
+    /// <param name="i">dropdown index selection</param>
+    /// <returns>corresponding QualityPreset</returns>
     public static QualityPreset getPresetByIndex(int i) {
         switch (i) {
             case 0:
@@ -337,14 +400,33 @@ public struct QualityPreset {
 }
 
 /// <summary>
-/// Serializable data class that can be saved to json.
+/// Serializable data class that can be saved to JSON.
 /// </summary>
 [System.Serializable]
 public class SettingsValues {
+    /// <summary>
+    /// Whether the story tutorial scene has been completed.
+    /// </summary>
     public bool sawStoryTutorial = false;
+
+    /// <summary>
+    /// Whether the loan tutorial screen has been viewed.
+    /// </summary>
     public bool sawLoanTutorial = false;
+
+    /// <summary>
+    /// Whether the weapon tutorial screen has been viewed.
+    /// </summary>
     public bool sawShopTutorial = false;
+
+    /// <summary>
+    /// Current game volume. Range: [0, 1]
+    /// </summary>
     public float volume = 0.5f;
+
+    /// <summary>
+    /// Current mouse sensitivity.
+    /// </summary>
     public float mouseSensitivity = 100f;
 
     // ------------- keybinds ---------------
@@ -354,11 +436,24 @@ public class SettingsValues {
     public string weaponTwoKey = "2";
     public string hidePauseMenuKey = "backspace";
 
+    /// <summary>
+    /// Whether to show the current FPS.
+    /// </summary>
     public bool showFPS = false;
 
     // --- configurable graphics ---
+    /// <summary>
+    /// Whether configured graphics settings should override the selected
+    /// quality preset's settings.
+    /// </summary>
     public bool overrideQualitySettings = false;
-    public int targetFramerate = 60;  // requires vsyncCount = 0
+
+    /// <summary>
+    /// Target framerate. Only works when vsyncCount = 0, otherwise,
+    /// the frame rate is affected by the monitor refresh rate.
+    /// </summary>
+    public int targetFramerate = 60;
+
     public int resolutionWidth = 1920;
     public int resolutionHeight = 1080;
     public bool fullscreen = false;

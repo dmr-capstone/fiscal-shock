@@ -10740,7 +10740,7 @@ MonoBehaviour:
   paymentSound: {fileID: 8300000, guid: 1f18748db0caa0558bb6abb5b0bfe3a7, type: 3}
   failureSound: {fileID: 8300000, guid: 3fa380f0406d07b01ab71650a7ee6d69, type: 3}
   dialogText: {fileID: 6385689623744839531}
-  rateText: {fileID: 7284600360369221995}
+  maxLoanText: {fileID: 7284600360369221995}
   creditorPanel: {fileID: 6385689623530712042}
   paymentId: {fileID: 7284600361595241017}
   paymentAmount: {fileID: 7284600361400157862}

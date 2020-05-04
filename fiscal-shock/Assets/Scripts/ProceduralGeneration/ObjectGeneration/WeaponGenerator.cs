@@ -2,9 +2,17 @@ using UnityEngine;
 using System.Collections.Generic;
 
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Procedurally generates weapons and their stats.
+    /// </summary>
     public class WeaponGenerator : MonoBehaviour {
+        [Tooltip("List of weapon configurations that may be generated")]
         public List<RandomWeapon> randomWeapons;
 
+        /// <summary>
+        /// Generates a weapon
+        /// </summary>
+        /// <returns>procedurally generated weapon</returns>
         public GameObject generateRandomWeapon() {
             // select a base
             int randi;
@@ -101,18 +109,18 @@ namespace FiscalShock.Procedural {
         /// Get a random string out of the list
         /// </summary>
         /// <param name="strung"></param>
-        /// <returns></returns>
+        /// <returns>random string</returns>
         private string getRandomString(List<string> strung) {
             return strung[Random.Range(0, strung.Count)];
         }
 
         /// <summary>
         /// Get a random index for a base weapon type.
-        /// Mutates input
+        /// Mutates input!
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="diceRoll"></param>
-        /// <param name="stuff"></param>
+        /// <param name="index">reference to idx</param>
+        /// <param name="diceRoll">reference to the chance/dice roll</param>
+        /// <param name="stuff">list of things to pull the index from</param>
         private void reroll(ref int index, ref float diceRoll, List<RandomWeapon> stuff) {
             do {
                 index = Random.Range(0, stuff.Count);
@@ -122,11 +130,11 @@ namespace FiscalShock.Procedural {
 
         /// <summary>
         /// Get a random index for projectile combination.
-        /// Mutates input
+        /// Mutates input!
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="diceRoll"></param>
-        /// <param name="stuff"></param>
+        /// <param name="index">reference to idx</param>
+        /// <param name="diceRoll">reference to the chance/dice roll</param>
+        /// <param name="stuff">list of things to pull the index from</param>
         private void reroll(ref int index, ref float diceRoll, List<ProjectileCombination> stuff) {
             do {
                 index = Random.Range(0, stuff.Count);
@@ -135,10 +143,15 @@ namespace FiscalShock.Procedural {
         }
 
         /// <summary>
-        /// Generate a random value from the Gaussian distribution.
+        /// Generate a random value from a Gaussian distribution and clamps it
+        /// to the allowed min/max values.
+        /// <para>x: minimum allowed value</para>
+        /// <para>y: maximum allowed value</para>
+        /// <para>z: mean value</para>
+        /// <para>w: standard deviation</para>
         /// </summary>
-        /// <param name="parms"></param>
-        /// <returns></returns>
+        /// <param name="parms">values, packed into a Vector4</param>
+        /// <returns>randomized value</returns>
         private float randomizeAndClamp(Vector4 parms) {
             return (float)System.Math.Round(Mathf.Clamp(Gaussian.next(parms.z, parms.w), parms.x, parms.y), 2);
         }
@@ -146,9 +159,11 @@ namespace FiscalShock.Procedural {
         /// <summary>
         /// Generate a random value from the Gaussian distribution after
         /// modifying the parameters.
+        ///
+        /// <seealso>WeaponGenerator.randomizeAndClamp</seealso>
         /// </summary>
-        /// <param name="parms"></param>
-        /// <param name="modifier"></param>
+        /// <param name="parms">values, packed into a Vector4</param>
+        /// <param name="modifier">value to modify each of the parameters by</param>
         /// <returns></returns>
         private float randomizeAndClamp(Vector4 parms, float modifier) {
             return (float)System.Math.Round(Mathf.Clamp(Gaussian.next(parms.z * modifier, (parms.w * modifier) * 0.5f), parms.x * modifier, parms.y * modifier), 2);
@@ -161,7 +176,7 @@ namespace FiscalShock.Procedural {
         /// https://mycurvefit.com/
         /// <para>Formula: 7 + (-6/(1 + (x/32)^0.9))</para>
         /// </summary>
-        /// <returns></returns>
+        /// <returns>modifier value</returns>
         private float getStrengthModifier() {
             float x = StateManager.totalFloorsVisited + 1;
             return 7 + (-6/(1 + Mathf.Pow(x/32, 0.9f)));
@@ -172,13 +187,18 @@ namespace FiscalShock.Procedural {
         /// ~1 when x = 2, ~6 when x = 10, ~22 when x = 50, ~36 when x = 100.
         /// </summary>
         /// <param name="strength"></param>
-        /// <returns></returns>
+        /// <returns>bullet cost</returns>
         private float getBulletCost(float strength) {
             return (float)System.Math.Round(1375 - (1374/(0.998f + Mathf.Pow(strength/16000, 0.7f))), 2);
         }
     }
 }
 
+/// <summary>
+/// Main component of a random weapon configuration. A different projectile
+/// combination implies an entirely different "kind" of weapon, despite
+/// similar names and models.
+/// </summary>
 [System.Serializable]
 public class ProjectileCombination {
     public GameObject bulletPrefab;
@@ -196,6 +216,11 @@ public class ProjectileCombination {
     public Vector4 fireDelayRange;
 }
 
+/// <summary>
+/// Base randomized weapon parameters for a particular weapon family.
+/// The values here are mainly flavor text. The real configuration
+/// is in the ProjectileCombinations.
+/// </summary>
 [System.Serializable]
 public class RandomWeapon {
     [Header("Main Settings")]
