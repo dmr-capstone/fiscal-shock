@@ -13,12 +13,12 @@ namespace FiscalShock.Pathfinding {
 
         void OnTriggerEnter(Collider col) {
             if (col.gameObject.layer == 11) {
-                Debug.Log($"Player stepped into {gameObject.name}");
+                // Debug.Log($"Player stepped into {gameObject.name}");
                 hivemind.lastPlayerLocation = cellSite;
             }
 
             if (col.gameObject.layer == 16) {
-                Debug.Log($"Debt Collector stepped into {gameObject.name}");
+                // Debug.Log($"Debt Collector stepped into {gameObject.name}");
                 col.gameObject.GetComponentInChildren<DebtCollectorMovement>().lastVisitedNode = cellSite;
             }
         }

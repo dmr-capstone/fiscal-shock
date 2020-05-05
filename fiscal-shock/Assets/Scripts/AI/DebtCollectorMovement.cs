@@ -35,13 +35,14 @@ namespace FiscalShock.AI {
         private Stack<Vertex> path;
         private Vector3 nextDestination;
         private Vector3 nextFlatDir;
+        private int recalculationCount = -1;
+        private int recalculationRate = 500;
 
         // Raycasting
         private Vector3 forwardWhisker;
         private Vector3 left75, right75, left120, right120, left150, right150, backward;
-        private Vector3 rightWhisker;
         private float whiskerLength = 5f;
-        private int whiskerSampleRate = 6;
+        private int whiskerSampleRate = 10;
         private int whiskerSampleCounter = 0;
 
         // Avoid walls, explosives, and obstacles.
@@ -201,6 +202,8 @@ namespace FiscalShock.AI {
         }
 
         void FixedUpdate() {
+            Debug.Log("Recalculation Count: " + recalculationCount);
+
             // Can be stunned, but not hurt. He is immortal. Only death can free you of debt.
             // (Or, ya' know, paying off your debt.)
             // TODO: implement ability to stun debt collector.
@@ -226,6 +229,7 @@ namespace FiscalShock.AI {
                 // Unlikely that the path will be valid if player gets away.
                 if (path != null) {
                     path = null;
+                    recalculationCount = 0;
                 }
 
                 // Obtain the "safe" direction to go.
@@ -249,6 +253,8 @@ namespace FiscalShock.AI {
                     return;
                 }
 
+                // DEBUG: Remove.
+                Debug.Log("RECALCULATING PATH.");
                 path = pathfinder.findPath(lastVisitedNode, hivemind.lastPlayerLocation);
 
                 // DEBUG: Move into debug code or remove.
@@ -281,15 +287,12 @@ namespace FiscalShock.AI {
                 Vector3 unnormDirection = nextDestination - transform.position;
                 nextFlatDir = new Vector3(unnormDirection.x, 0, unnormDirection.z).normalized;
 
-                // Obtain safe direction using next destination point as target.
-                Vector3 safeDir = findSafeDirection(nextFlatDir, transform.forward);
+                return;
+            }
 
-                // Rotate towards the safe direction.
-                Quaternion safeDirRotation = Quaternion.LookRotation(safeDir);
-                transform.rotation = Quaternion.Slerp(transform.rotation, safeDirRotation, Time.deltaTime * rotationSpeed);
-
-                // Move in the safe direction, which should now be forward.
-                controller.SimpleMove(transform.forward * movementSpeed);
+            if (recalculationCount == recalculationRate) {
+                path = null;
+                recalculationCount = 0;
             }
 
             if (lastVisitedNode.Equals(nextDestinationNode)) {
@@ -311,11 +314,13 @@ namespace FiscalShock.AI {
 
                     // Move in the safe direction, now the object's forward vector.
                     controller.SimpleMove(transform.forward * movementSpeed);
+                    recalculationCount++;
                     return;
                 }
 
                 // Want to recalculate the path, as already reached our destination.
                 path = null;
+                recalculationCount = 0;
                 return;
             }
 
@@ -327,6 +332,7 @@ namespace FiscalShock.AI {
             transform.rotation = Quaternion.Slerp(transform.rotation, safeDirectionRotation, Time.deltaTime * rotationSpeed);
 
             controller.SimpleMove(transform.forward * movementSpeed);
+            recalculationCount++;
         }
     }
 }

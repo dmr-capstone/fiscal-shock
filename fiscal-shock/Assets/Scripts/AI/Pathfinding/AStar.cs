@@ -60,10 +60,6 @@ namespace FiscalShock.Pathfinding {
 
             // Add neightbors to open list if not there or better f cost than before.
             while (!currentNode.Value.associatedLocation.Equals(destination)) {
-                // DEBUG: Debugging code. Remove or refactor for debugging mode.
-                Debug.Log("CURRENT: " + currentNode.Value.associatedLocation.vector);
-                // Debug.Log("Desination: " + destination.vector);
-
                 // Remove the value with the smallest f cost (should be at end of list) and close it.
                 open.RemoveLast();
                 closed.AddFirst(currentNode);
@@ -72,7 +68,6 @@ namespace FiscalShock.Pathfinding {
                 foreach (Vertex neighbor in currentNode.Value.associatedLocation.neighborhood) {
                     // Neighboring vertices that are unnavigable are useless.
                     if (neighbor.toIgnore) {
-                        Debug.Log("CONTINUING ON. VERTEX NOT WALKABLE: " + neighbor.vector);
                         continue;
                     }
 
@@ -115,10 +110,6 @@ namespace FiscalShock.Pathfinding {
                 }
 
                 currentNode = open.Last;
-
-                // DEBUG: Debug code. Remove or refactor for debugging mode.
-                // Debug.Log("CLOSED COUNT: " + closed.Count);
-                Debug.Log("OPEN COUNT: " + open.Count);
             }
 
             VertexNode node = currentNode.Value;
