@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using FiscalShock.Graphs;
 using FiscalShock.Pathfinding;
+using FiscalShock.Procedural;
 using System.IO;
 
 namespace FiscalShock.AI {
@@ -45,6 +46,11 @@ namespace FiscalShock.AI {
         private int whiskerSampleRate = 10;
         private int whiskerSampleCounter = 0;
 
+        // Used to determine if the debt collector is stuck.
+        private int teleportationSaveRate =  300;
+        internal int saveCounter = 0;
+        private float teleportationHeight;
+
         // Avoid walls, explosives, and obstacles.
         private LayerMask avoidance = (1 << 12) | (1 << 14) | (1 << 15);
 
@@ -55,9 +61,12 @@ namespace FiscalShock.AI {
 
             controller = GetComponentInParent<CharacterController>();
 
-            hivemind = GameObject.Find("DungeonSummoner").GetComponent<Hivemind>();
+            GameObject dungeonMaster = GameObject.Find("DungeonSummoner");
+
+            hivemind = dungeonMaster.GetComponent<Hivemind>();
             pathfinder = hivemind.pathfinder;
             lastVisitedNode = spawnPoint;
+            teleportationHeight = dungeonMaster.GetComponent<Dungeoneer>().currentDungeonType.wallHeight * 0.8f;
 
             // DEBUG
             Debug.Log("LAST VISITED NODE: " + lastVisitedNode.vector);
@@ -202,8 +211,6 @@ namespace FiscalShock.AI {
         }
 
         void FixedUpdate() {
-            Debug.Log("Recalculation Count: " + recalculationCount);
-
             // Can be stunned, but not hurt. He is immortal. Only death can free you of debt.
             // (Or, ya' know, paying off your debt.)
             // TODO: implement ability to stun debt collector.
@@ -222,6 +229,61 @@ namespace FiscalShock.AI {
 
             // Increase the raycast sample rate counter.
             whiskerSampleCounter++;
+            saveCounter++;
+
+            // DC has been in the same cell for too long
+            if (saveCounter >= teleportationSaveRate) {
+                if (path != null && path.Count > 0) {
+                    if (nextDestinationNode == null) {
+                        // Grab the next destination from the path.
+                        nextDestinationNode = path.Pop();
+                    }
+
+                    // Turn off the character controller.
+                    controller.enabled = false;
+
+                    // Teleport to the nextDestinationNode (at 80% of max height).
+                    transform.parent.position = new Vector3(nextDestinationNode.x, teleportationHeight, nextDestinationNode.y);
+
+                    // Turn on the character controller again.
+                    controller.enabled = true;
+                    lastVisitedNode = nextDestinationNode;
+
+                    if (path.Count > 0) {
+                        nextDestinationNode = path.Pop();
+                    }
+
+                    else {
+                        path = null;
+                        recalculationCount = 0;
+                    }
+                }
+
+                else {
+                    // Spawn point is default. Should technically never be used.
+                    Vertex teleportTo = spawnPoint;
+
+                    foreach (Cell c in lastVisitedNode.cell.neighbors) {
+                        if (c.reachable) {
+                            teleportTo = c.site;
+                            break;
+                        }
+                    }
+
+                    controller.enabled = false;
+                    transform.parent.position = new Vector3(teleportTo.x, teleportationHeight, teleportTo.y);
+                    controller.enabled = true;
+                    lastVisitedNode = teleportTo;
+
+                    if (path != null) {
+                        path = null;
+                        recalculationCount = 0;
+                    }
+                }
+
+                saveCounter = 0;
+                return;
+            }
 
             // Straight line pursuit. Want to catch player, so no retreat.
             // TODO: Determine if need a retreat? 
@@ -290,7 +352,7 @@ namespace FiscalShock.AI {
                 return;
             }
 
-            if (recalculationCount == recalculationRate) {
+            if (recalculationCount >= recalculationRate) {
                 path = null;
                 recalculationCount = 0;
             }

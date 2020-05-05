@@ -6,6 +6,7 @@ namespace FiscalShock.Pathfinding {
     public class MovementTrigger : MonoBehaviour {
         public Vertex cellSite { get; set; }
         private Hivemind hivemind { get; set; }
+        private DebtCollectorMovement dcMovement;
 
         void Start() {
             hivemind = GameObject.Find("DungeonSummoner").GetComponent<Hivemind>();
@@ -18,8 +19,13 @@ namespace FiscalShock.Pathfinding {
             }
 
             if (col.gameObject.layer == 16) {
+                if (dcMovement == null) {
+                    dcMovement = col.gameObject.GetComponentInChildren<DebtCollectorMovement>();
+                }
+
                 // Debug.Log($"Debt Collector stepped into {gameObject.name}");
-                col.gameObject.GetComponentInChildren<DebtCollectorMovement>().lastVisitedNode = cellSite;
+                dcMovement.lastVisitedNode = cellSite;
+                dcMovement.saveCounter = 0;
             }
         }
     }
