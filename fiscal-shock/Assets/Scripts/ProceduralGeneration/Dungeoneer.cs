@@ -29,7 +29,7 @@ namespace FiscalShock.Procedural {
         /* Variables set during runtime */
         public DungeonType currentDungeonType { get; set; }
         public MersenneTwister mt { get; private set; }
-        public PlayerTrigger cellTrigger { get; private set; }
+        public MovementTrigger cellTrigger { get; private set; }
 
 
         /* Graphs */
@@ -39,9 +39,8 @@ namespace FiscalShock.Procedural {
         public List<Edge> spanningTree { get; private set; }
         public List<VoronoiRoom> roomVoronoi { get; private set; }
         public List<Cell> validCells { get; private set; }
-        public Voronoi navigableGraph { get; private set; }
+        public Delaunay navigableDelaunay { get; private set; }
         private List<Cell> reachableCells;
-        private List<Vertex> validSpawnPoints => reachableCells.SelectMany(c => c.vertices).Distinct().ToList();
         public Vector3 topRightWallCorner { get; set; }
         public Vector3 bottomLeftWallCorner { get; set; }
 
@@ -55,6 +54,9 @@ namespace FiscalShock.Procedural {
         public GameObject cellColliderOrganizer { get; private set; }
         private GameObject debtCollector;
 
+        /* Because script execution order is a *****. */
+        private Vertex dcSpawnPoint;
+
         public void Start() {
             Settings.loadSettings();
             Debug.Log($"Starting to load");
@@ -66,7 +68,7 @@ namespace FiscalShock.Procedural {
             // and pick randomly later
             currentDungeonType = dungeonThemes
                 .Where(d => d.typeEnum == StateManager.selectedDungeon)
-                //.Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
+                // .Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
                 .Select(d => d.gameObject)
                 .First()
                 .GetComponent<DungeonType>();
@@ -236,13 +238,13 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Placing enemies took {sw.ElapsedMilliseconds} ms");
             sw.Reset();
 
-            navigableGraph = new Voronoi(reachableCells);
+            navigableDelaunay = new Delaunay(dt, reachableCells);
+
             Debug.Log("Setting player node collision triggers.");
             setPlayerCollisions();
 
-            // TODO: UNCOMMENT
-            // Debug.Log("Spawning the debt collector.");
-            // spawnDebtCollector();
+            Debug.Log("Spawning the debt collector.");
+            spawnDebtCollector();
         }
 
         /// <summary>
@@ -409,7 +411,8 @@ namespace FiscalShock.Procedural {
                 StateManager.cashOnHand = 100f;
             }
 
-            player.GetComponent<PlayerMovement>().originalSpawn = spawnPoint;
+            PlayerMovement pmScript = player.GetComponent<PlayerMovement>();
+            pmScript.originalSpawn = spawnPoint;
 
             // Attach any other stuff to player here
             Cheats cheater = GameObject.FindObjectOfType<Cheats>();
@@ -432,12 +435,17 @@ namespace FiscalShock.Procedural {
 
             // Enable temporary player invincibility on spawn
             StartCoroutine(player.GetComponentInChildren<PlayerHealth>().enableIframes(5f));
+
+            Debug.Log(pmScript.originalSpawn.vector);
+
+            // Set the Debt Collector spawn point because ******* script execution order.
+            debtCollector.GetComponentInChildren<DebtCollectorMovement>().spawnPoint = dcSpawnPoint;
         }
 
         private void setPlayerCollisions() {
-            foreach (Cell cell in navigableGraph.cells) {
-                if (cell.isClosed) {
-                    Polygon bbox = cell.getBoundingBox();
+            foreach (Vertex vertex in navigableDelaunay.vertices) {
+                if (vertex.cell.isClosed) {
+                    Polygon bbox = vertex.cell.getBoundingBox();
                     float width = bbox.maxX - bbox.minX;
                     float height = bbox.maxY - bbox.minY;
                     float aspectRatio = width/height;
@@ -449,26 +457,24 @@ namespace FiscalShock.Procedural {
 
                         GameObject triggerContainer = Instantiate(triggerPrefab, bboxCenter, triggerPrefab.transform.rotation);
                         triggerContainer.transform.localScale = new Vector3(bbox.maxX - bbox.minX, 1, bbox.maxY-bbox.minY);
-                        triggerContainer.name = $"Trigger for Cell {cell.id}";
+                        triggerContainer.name = $"Trigger for Cell {vertex.cell.id}";
                         triggerContainer.transform.parent = cellColliderOrganizer.transform;
 
-                        cellTrigger = triggerContainer.GetComponent<PlayerTrigger>();
-                        cellTrigger.cell = cell;
-                        cellTrigger.edges = cell.sides;
+                        cellTrigger = triggerContainer.GetComponent<MovementTrigger>();
+                        cellTrigger.cellSite = vertex;
                     }
                 }
             }
         }
 
-        // NOTE: With other enemies, this code will not necessarily work. Needed for this b/c can't be trapped.
         private void spawnDebtCollector() {
-            // Code very similar to player spawn.
+            List<Vertex> spawnPoints = navigableDelaunay.vertices;
+
             Vertex spawnPoint;
             do {
-                spawnPoint = validSpawnPoints[mt.Next(validSpawnPoints.Count - 1)];
+                spawnPoint = spawnPoints[mt.Next(spawnPoints.Count - 1)];
             } while (spawnPoint.cell.hasPortal);
 
-            // BUG: This code may not work with the new setup.
             debtCollector = GameObject.FindGameObjectWithTag("Debt Collector");
 
             if (debtCollector == null) {
@@ -476,7 +482,7 @@ namespace FiscalShock.Procedural {
                     debtCollectorPrefab.transform.rotation);
             }
 
-            debtCollector.GetComponentInChildren<DebtCollectorMovement>().spawnSite = spawnPoint.cell;
+            dcSpawnPoint = spawnPoint;
         }
 
         private bool isPointOnOrNearConvexHull(Vertex point) {

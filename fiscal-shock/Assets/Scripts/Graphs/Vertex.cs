@@ -26,7 +26,8 @@ namespace FiscalShock.Graphs {
 
         // PATHFINDING ONLY
         internal bool isOnWall { get; set; } = false;
-        internal bool walkable { get; set; } = true;
+        internal bool walkable { get; set; } = false;
+        internal bool toIgnore { get; set; } = false;
 
         /* Begin overloaded constructors */
         public Vertex(float xX, float yY) {

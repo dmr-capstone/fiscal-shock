@@ -34,18 +34,8 @@ public class PlayerMovement : MonoBehaviour
     void Start() {
         Hivemind hivemind = GameObject.Find("DungeonSummoner").GetComponent<Hivemind>();
 
-        foreach(Edge side in originalSpawn.cell.sides) {
-            // Check that the edge isn't a wall.
-            if (!side.isWall) {
-                // TODO: Add the bounds checking here.
-                // 1) Check if the first edge coordinate is out of the ground area.
-                // 2) If 1., check if the second edge coordinate is out of the ground area.
-                // 3) If 2., continue onto the next side.
-
-                hivemind.lastPlayerLocation = side.p;
-                break;
-            }
-        }
+        hivemind.lastPlayerLocation = originalSpawn;
+        Debug.Log(hivemind.lastPlayerLocation.vector);
     }
 
     // Update is called once per frame

@@ -209,6 +209,7 @@ namespace FiscalShock.Procedural {
                 foreach (RaycastHit hit in hits) {
                     Edge er = hit.collider.gameObject.GetComponent<WallInfo>().associatedEdge;
                     er.isWall = false;
+
                     if (er.length < FATTEST_CONTROLLER * 2) {
                         shortDestroyedWalls.Add(er);
                     }
@@ -269,6 +270,39 @@ namespace FiscalShock.Procedural {
         /// </summary>
         /// <param name="d"></param>
         /// <param name="wallsToKeep"></param>
+
+        // private static void destroyLagWalls(Dungeoneer d, List<GameObject> wallsToKeep) {
+        //     foreach (VoronoiRoom r in d.roomVoronoi) {
+        //         foreach (Edge e in r.exterior.sides) {
+        //             wallsToKeep.AddRange(e.wallObjects);
+        //         }
+        //     }
+
+        //     /*foreach (GameObject w in GameObject.FindGameObjectsWithTag("Wall")) {
+        //         if (w != null && !wallsToKeep.Contains(w)) {
+        //             WallInfo wi = w.GetComponent<WallInfo>();
+        //             if (wi != null) {
+        //                 wi.associatedEdge.isWall = false;
+        //             }
+        //             w.name = $"Destroyed {w.name}";
+        //             UnityEngine.Object.Destroy(w);
+        //         }
+        //     }*/
+        //     foreach (GameObject w in GameObject.FindGameObjectsWithTag("Wall")) {
+        //         if (w != null) {
+        //             WallInfo wi = w.GetComponent<WallInfo>();
+        //             if (wi == null) {
+        //                 continue;
+        //             }
+        //             if (!wallsToKeep.Contains(w) || /*wi.associatedEdge.cells.Count(c => c.reachable) > 1*/ wi.associatedEdge.cells.Select(c => c.room).Distinct().Count() > 1) {  // edited with compromise
+        //                 wi.associatedEdge.isWall = false;
+        //                 w.name = $"Destroyed {w.name}";
+        //                 UnityEngine.Object.Destroy(w);
+        //             }
+        //         }
+        //     }
+        // }
+
         private static void destroyLagWalls(Dungeoneer d, List<GameObject> wallsToKeep) {
             foreach (VoronoiRoom r in d.roomVoronoi) {
                 foreach (Edge e in r.exterior.sides) {
