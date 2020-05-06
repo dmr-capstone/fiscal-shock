@@ -59,6 +59,13 @@ public class PlayerHealth : MonoBehaviour {
         }
     }
 
+    public void endGameByDebtCollector() {
+        hitVignette.SetActive(false);
+        StateManager.playerDead = true;
+        Destroy(GameObject.Find("DungeonMusic"));
+        GameObject.FindGameObjectWithTag("Loading Screen").GetComponent<LoadingScreen>().startLoadingScreen("LoseGame");
+    }
+
     public IEnumerator enableIframes(float duration) {
         if (playerFlashlight == null) {  // if start in dungeon scene
             playerFlashlight = GameObject.FindGameObjectWithTag("Player Flashlight").GetComponent<Light>();

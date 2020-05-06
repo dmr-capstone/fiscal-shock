@@ -73,8 +73,8 @@ namespace FiscalShock.AI {
             Debug.Log("LAST VISITED NODE: " + lastVisitedNode.vector);
         }
 
-        // TODO: Adjust so that takes the step distance into account.
-        // TODO: Need to use both the target direction AND the current foward angle to determine the safe direction!!
+        // MAYBE: Adjust so that takes the step distance into account.
+        // MAYBE: Need to use both the target direction AND the current foward angle to determine the safe direction!!
         private Vector3 findSafeDirection(Vector3 target, Vector3 currentForward) {
             forwardWhisker = target;
 
@@ -389,6 +389,12 @@ namespace FiscalShock.AI {
 
             controller.SimpleMove(transform.forward * movementSpeed);
             recalculationCount++;
+        }
+
+        void OnTriggerEnter(Collider col) {
+            if (col.gameObject.tag == "Player") {
+                player.GetComponent<PlayerHealth>().endGameByDebtCollector();
+            }
         }
     }
 }
