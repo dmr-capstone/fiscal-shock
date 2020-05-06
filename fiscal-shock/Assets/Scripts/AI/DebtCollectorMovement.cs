@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
 using FiscalShock.Graphs;
 using FiscalShock.Pathfinding;
@@ -261,14 +262,7 @@ namespace FiscalShock.AI {
 
                 else {
                     // Spawn point is default. Should technically never be used.
-                    Vertex teleportTo = spawnPoint;
-
-                    foreach (Cell c in lastVisitedNode.cell.neighbors) {
-                        if (c.reachable) {
-                            teleportTo = c.site;
-                            break;
-                        }
-                    }
+                    Vertex teleportTo = lastVisitedNode.cell.neighbors.First(c => c.reachable).site;
 
                     controller.enabled = false;
                     transform.parent.position = new Vector3(teleportTo.x, teleportationHeight, teleportTo.y);
