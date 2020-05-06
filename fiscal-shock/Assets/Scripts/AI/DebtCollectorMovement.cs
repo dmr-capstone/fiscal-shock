@@ -5,6 +5,7 @@ using FiscalShock.Graphs;
 using FiscalShock.Pathfinding;
 using FiscalShock.Procedural;
 using System.IO;
+using System.Collections;
 
 namespace FiscalShock.AI {
     public class DebtCollectorMovement : MonoBehaviour {
@@ -52,8 +53,67 @@ namespace FiscalShock.AI {
         internal int saveCounter = 0;
         private float teleportationHeight;
 
-        // Avoid walls, explosives, and obstacles.
-        private LayerMask avoidance = (1 << 12) | (1 << 14) | (1 << 15);
+        /// <summary>
+        /// Layers the debt collector can climb/jump over.
+        /// </summary>
+        private LayerMask jumpable;
+
+        /// <summary>
+        /// Layers the debt collector tries to avoid.
+        /// </summary>
+        private LayerMask avoidance;
+
+        private float damageTaken = 0;
+
+        /// <summary>
+        /// Modifier on the base stun threshold calculation. Based on floors
+        /// visited, so it gets harder to stun him the more you've been around.
+        /// </summary>
+        private float stunThresholdModifier;
+
+        /// <summary>
+        /// Base threshold for stunning the debt collector. Based on how much
+        /// debt you owe to any lender.
+        /// </summary>
+        private float stunThreshold;
+
+        public GameObject stunEffect;
+
+        /// <summary>
+        /// Speed modifier. Debt collector is faster when you're more indebted.
+        /// </summary>
+        private float debtSpeedMod = (float)Mathf.Log10(Mathf.Pow(StateManager.totalDebt, 0.45f));
+
+        [Tooltip("Current forward direction vector. Visible for debugging purposes.")]
+        public Vector3 fwd;
+
+        [Header("Climbing/Jumping/Vertical Obstacle Avoidance")]
+        [Tooltip("Current vertical speed.")]
+        public float verticalSpeed = 0;
+
+        [Tooltip("Gravity modifier. More gravity makes debt collector fall faster.")]
+        public float gravity = 20f;
+
+        [Tooltip("Whether the debt collector should jump at the next update.")]
+        public bool startJumping = false;
+
+        /// <summary>
+        /// Whether the debt collector is currently airborne. Enemies
+        /// are typically spawned in the air, and the debt collector
+        /// will correct itself if it spawned on solid ground during
+        /// the next update anyway.
+        /// </summary>
+        private bool isJumping = true;
+
+        [Tooltip("Maximum jump height. A shorter jump height results in the debt collector appearing to 'climb' objects. A jump height too short results in the debt collector being unable to climb objects over a certain height.")]
+        public float jumpHeight = 2f;
+
+        /// <summary>
+        /// Radius of the box used in the box check when the debt collector
+        /// tries to scale a wall. Should be equal or very close to the extents
+        /// of the character controller.
+        /// </summary>
+        private float footSize;
 
         void Start() {
             if (player == null) {
@@ -69,8 +129,30 @@ namespace FiscalShock.AI {
             lastVisitedNode = spawnPoint;
             teleportationHeight = dungeonMaster.GetComponent<Dungeoneer>().currentDungeonType.wallHeight * 0.8f;
 
+            // LayerMask.NameToLayer can only be used at runtime.
+            jumpable = ((1 << LayerMask.NameToLayer("Obstacle")) | (1 << LayerMask.NameToLayer("Explosive") | (1 << LayerMask.NameToLayer("Decoration"))));
+            avoidance = (1 << LayerMask.NameToLayer("Wall") | jumpable);
+
+            // Set stun thresholds.
+            stunThresholdModifier = (float)Mathf.Log10(Mathf.Pow(StateManager.totalFloorsVisited, 0.3f)) + StateManager.totalFloorsVisited/4.0f + 1.0f;
+            stunThreshold = ((float)Mathf.Pow(StateManager.totalDebt, 1.5f) / 3333.0f + 5) * stunThresholdModifier;
+
+            // Set speed.
+            if (float.IsNaN(debtSpeedMod) || float.IsInfinity(debtSpeedMod)) {
+                debtSpeedMod = 1;
+            }
+            float playerSpeed = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerMovement>().speed;
+            debtSpeedMod = Mathf.Clamp(debtSpeedMod, 1, Mathf.Ceil(playerSpeed/movementSpeed + 0.5f));
+            movementSpeed *= debtSpeedMod;
+
+            // Determine extents of the box check for climbing/jumping
+            footSize = controller.bounds.extents.y * 1.1f;
+
             // DEBUG
+            #if UNITY_EDITOR
             Debug.Log("LAST VISITED NODE: " + lastVisitedNode.vector);
+            Debug.Log($"DC speed is {movementSpeed} and x{debtSpeedMod}; player speed is {playerSpeed}");
+            #endif
         }
 
         // MAYBE: Adjust so that takes the step distance into account.
@@ -211,10 +293,9 @@ namespace FiscalShock.AI {
             return forwardWhisker;
         }
 
-        void FixedUpdate() {
+        private void FixedUpdate() {
             // Can be stunned, but not hurt. He is immortal. Only death can free you of debt.
             // (Or, ya' know, paying off your debt.)
-            // TODO: implement ability to stun debt collector.
             if (player == null || stunned) {
                 return;
             }
@@ -232,6 +313,8 @@ namespace FiscalShock.AI {
             whiskerSampleCounter++;
             saveCounter++;
 
+            setVerticalMovement();
+
             // DC has been in the same cell for too long
             if (saveCounter >= teleportationSaveRate) {
                 if (path != null && path.Count > 0) {
@@ -244,7 +327,9 @@ namespace FiscalShock.AI {
                     controller.enabled = false;
 
                     // Teleport to the nextDestinationNode (at 80% of max height).
-                    transform.parent.position = new Vector3(nextDestinationNode.x, teleportationHeight, nextDestinationNode.y);
+                    verticalSpeed = 0f;
+                    isJumping = true;
+                    transform.position = new Vector3(nextDestinationNode.x, teleportationHeight, nextDestinationNode.y);
 
                     // Turn on the character controller again.
                     controller.enabled = true;
@@ -265,7 +350,7 @@ namespace FiscalShock.AI {
                     Vertex teleportTo = lastVisitedNode.cell.neighbors.First(c => c.reachable).site;
 
                     controller.enabled = false;
-                    transform.parent.position = new Vector3(teleportTo.x, teleportationHeight, teleportTo.y);
+                    transform.position = new Vector3(teleportTo.x, teleportationHeight, teleportTo.y);
                     controller.enabled = true;
                     lastVisitedNode = teleportTo;
 
@@ -280,7 +365,6 @@ namespace FiscalShock.AI {
             }
 
             // Straight line pursuit. Want to catch player, so no retreat.
-            // TODO: Determine if need a retreat? 
             if (distanceFromPlayer2D < visionRadius) {
                 // Unlikely that the path will be valid if player gets away.
                 if (path != null) {
@@ -295,11 +379,7 @@ namespace FiscalShock.AI {
                 Debug.DrawRay(transform.position, safeDir * whiskerLength, Color.black, 1);
                 #endif
 
-                // Quaternion rotationToPlayer = Quaternion.LookRotation(playerDirection);
-                Quaternion safeDirRotation = Quaternion.LookRotation(safeDir);
-                transform.rotation = Quaternion.Slerp(transform.rotation, safeDirRotation, Time.deltaTime * rotationSpeed);
-
-                controller.SimpleMove(transform.forward * movementSpeed);
+                applyMovement(safeDir);
                 return;
             }
 
@@ -310,7 +390,9 @@ namespace FiscalShock.AI {
                 }
 
                 // DEBUG: Remove.
+                #if UNITY_EDITOR
                 Debug.Log("RECALCULATING PATH.");
+                #endif
                 path = pathfinder.findPath(lastVisitedNode, hivemind.lastPlayerLocation);
 
                 // DEBUG: Move into debug code or remove.
@@ -336,7 +418,9 @@ namespace FiscalShock.AI {
                 nextDestinationNode = path.Pop();
 
                 // DEBUG: Remove or set debugging code.
+                #if UNITY_EDITOR
                 Debug.Log("NEXT DESTINATION: " + nextDestinationNode.vector);
+                #endif
 
                 // T: Vector2 -> Vector3
                 nextDestination = new Vector3(nextDestinationNode.x, transform.position.y, nextDestinationNode.y);
@@ -356,7 +440,9 @@ namespace FiscalShock.AI {
                     nextDestinationNode = path.Pop();
 
                     // DEBUG: Remove or set debugging code.
+                    #if UNITY_EDITOR
                     Debug.Log("NEXT DESTINATION: " + nextDestinationNode.vector);
+                    #endif
 
                     nextDestination = new Vector3(nextDestinationNode.x, transform.position.y, nextDestinationNode.y);
                     Vector3 unnormDirection = nextDestination - transform.position;
@@ -364,12 +450,8 @@ namespace FiscalShock.AI {
 
                     Vector3 safeDir = findSafeDirection(nextFlatDir, transform.forward);
 
-                    // Rotate towards the safe direction.
-                    Quaternion safeDirRotation = Quaternion.LookRotation(safeDir);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, safeDirRotation, Time.deltaTime * rotationSpeed);
-
-                    // Move in the safe direction, now the object's forward vector.
-                    controller.SimpleMove(transform.forward * movementSpeed);
+                    // Move in the safe direction.
+                    applyMovement(safeDir);
                     recalculationCount++;
                     return;
                 }
@@ -380,21 +462,90 @@ namespace FiscalShock.AI {
                 return;
             }
 
-            // Find the safe direction.
+            // Find the safe direction and move there.
             Vector3 safeDirection = findSafeDirection(nextFlatDir, transform.forward);
-
-            // Rotate towards the safe direction.
-            Quaternion safeDirectionRotation = Quaternion.LookRotation(safeDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, safeDirectionRotation, Time.deltaTime * rotationSpeed);
-
-            controller.SimpleMove(transform.forward * movementSpeed);
+            applyMovement(safeDirection);
             recalculationCount++;
         }
 
-        void OnTriggerEnter(Collider col) {
-            if (col.gameObject.tag == "Player") {
-                player.GetComponent<PlayerHealth>().endGameByDebtCollector();
+        /// <summary>
+        /// Apply velocity changes.
+        /// </summary>
+        private void applyMovement(Vector3 direction) {
+            // Rotate towards the desired direction.
+            Quaternion safeDirectionRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, safeDirectionRotation, Time.deltaTime * rotationSpeed);
+
+            fwd = transform.forward * movementSpeed;
+            fwd.y = verticalSpeed;
+            controller.Move(fwd * Time.deltaTime);
+        }
+
+        /// <summary>
+        /// Apply velocity changes related to vertical movement.
+        /// </summary>
+        private void setVerticalMovement() {
+            if (startJumping) {
+                verticalSpeed = jumpHeight;
+                startJumping = false;
+                isJumping = true;
+                return;
             }
+
+            if (Physics.Raycast(transform.position, -Vector3.up, footSize, (1 << LayerMask.NameToLayer("Ground") | avoidance))) {
+                verticalSpeed = 0;
+                isJumping = false;
+            } else if (isJumping) {
+                verticalSpeed -= gravity * Time.deltaTime;
+            } else {  // something strange happened and you're clearly not on the ground
+                isJumping = true;
+            }
+        }
+
+        private void OnControllerColliderHit(ControllerColliderHit col) {
+            if (stunned) {  // Can stun and touch without game over, to some extent
+                return;
+            }
+
+            if (col.gameObject.tag == "Missile" || col.gameObject.tag == "Bullet") {
+                BulletBehavior bb = col.gameObject.GetComponent<BulletBehavior>();
+                if (bb == null) {
+                    damageTaken += 1.0f;
+                    return;
+                }
+                damageTaken += bb.damage;
+                if (damageTaken >= (stunThreshold * Random.Range(0.85f, 1.15f))) {
+                    StartCoroutine(stun(Random.Range(3f, 5f)));
+                }
+            }
+
+            if (col.gameObject.tag == "Player" && !StateManager.playerDead && StateManager.totalDebt > 0) {
+                Debug.Log($"Player was caught by debt collector on floor {StateManager.currentFloor} with {StateManager.totalDebt} debt");
+                player.GetComponent<PlayerHealth>().endGameByDebtCollector();
+                return;
+            }
+
+            // Jump on lateral collisions. Still gets triggered on corners, though
+            if (Mathf.Abs(col.normal.y) > 0.5f) {
+                return;
+            }
+            if (Physics.SphereCast(transform.position, controller.bounds.extents.x, transform.forward, out RaycastHit _, 1f, jumpable)) {
+                startJumping = true;
+            }
+        }
+
+        private IEnumerator stun(float duration) {
+            stunned = true;
+            Material mat = gameObject.GetComponentInChildren<Renderer>().material;
+            mat.SetColor("_Color", new Color(0.1f, 0.1f, 0.1f));
+            stunEffect.SetActive(true);
+            yield return new WaitForSeconds(duration);
+
+            damageTaken = 0;
+            stunned = false;
+            stunEffect.SetActive(false);
+            mat.SetColor("_Color", Color.white);
+            yield return null;
         }
     }
 }

@@ -37,6 +37,8 @@ namespace FiscalShock.Procedural {
         public int timesEntered;
         [Tooltip("Set the state manager value")]
         public int currentFloor;
+        [Tooltip("Enable or disable spawning of enemies. Useful when verifying geometry generation or the debt collector.")]
+        public bool spawnEnemiesDebug = true;
 
         /* Variables set during runtime */
         public DungeonType currentDungeonType { get; set; }
@@ -244,12 +246,14 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Placing portals took {sw.ElapsedMilliseconds} ms");
             sw.Reset();
 
-            Debug.Log("Starting enemy placement");
-            sw.Start();
-            spawnEnemies();
-            sw.Stop();
-            Debug.Log($"Placing enemies took {sw.ElapsedMilliseconds} ms");
-            sw.Reset();
+            if (spawnEnemiesDebug) {
+                Debug.Log("Starting enemy placement");
+                sw.Start();
+                spawnEnemies();
+                sw.Stop();
+                Debug.Log($"Placing enemies took {sw.ElapsedMilliseconds} ms");
+                sw.Reset();
+            }
 
             navigableDelaunay = new Delaunay(dt, reachableCells);
 

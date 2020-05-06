@@ -140,7 +140,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 208130074384889237}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 18d262f8db7df7c6ead74923307508f0, type: 3}
   m_Name: 
@@ -258,6 +258,9 @@ MonoBehaviour:
   jumpBy: 3
   groundCheck: {fileID: 208130074375257317}
   groundDistance: 0.4
+  velocity: {x: 0, y: 0, z: 0}
+  inputActions: {fileID: -944628639613478452, guid: 345c64f0173fb0f10afed33f39f5a709,
+    type: 3}
   groundMask:
     serializedVersion: 2
     m_Bits: 256
@@ -267,9 +270,6 @@ MonoBehaviour:
   decorationMask:
     serializedVersion: 2
     m_Bits: 512
-  velocity: {x: 0, y: 0, z: 0}
-  inputActions: {fileID: -944628639613478452, guid: 345c64f0173fb0f10afed33f39f5a709,
-    type: 3}
 --- !u!114 &8789662076828674309
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,7 +323,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Actions: {fileID: 0}
+  m_Actions: {fileID: -944628639613478452, guid: 345c64f0173fb0f10afed33f39f5a709,
+    type: 3}
   m_NotificationBehavior: 2
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:

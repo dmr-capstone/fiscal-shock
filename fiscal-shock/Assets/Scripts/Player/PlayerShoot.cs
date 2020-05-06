@@ -138,7 +138,9 @@ public class PlayerShoot : MonoBehaviour {
     /// Initialize references and states
     /// </summary>
     private void Start() {
-        feed = GameObject.FindGameObjectWithTag("HUD").GetComponent<FeedbackController>();
+        GameObject hud = GameObject.FindGameObjectWithTag("HUD");
+        feed = hud.GetComponentInChildren<FeedbackController>();
+        hud.GetComponentInChildren<HUD>().playerTransform = transform;
         GameObject tmp = GameObject.FindGameObjectWithTag("Crosshair");
         if (tmp != null) {
             crossHair = tmp.GetComponentInChildren<Image>(true);

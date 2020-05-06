@@ -98,6 +98,12 @@ public class LoadingScreen : MonoBehaviour {
     };
 
     /// <summary>
+    /// Prevent restarting an async load
+    /// </summary>
+    public bool loading = false;
+
+
+    /// <summary>
     /// Singleton management. Note that this singleton isn't added to the state
     /// manager's list. We still want to use the loading screen when possible.
     /// </summary>
@@ -166,6 +172,10 @@ public class LoadingScreen : MonoBehaviour {
     /// </summary>
     /// <param name="sceneToLoad"></param>
     public void startLoadingScreen(string sceneToLoad) {
+        if (loading) {
+            return;
+        }
+        loading = true;
         StateManager.pauseAvailable = false;
         System.GC.Collect();
         previousScene = SceneManager.GetActiveScene().name;
@@ -214,6 +224,7 @@ public class LoadingScreen : MonoBehaviour {
         }
         Debug.Log("Scene load is done");
 
+        loading = false;
         async = null;
         loadCanvas.enabled = false;
         StateManager.pauseAvailable = true;

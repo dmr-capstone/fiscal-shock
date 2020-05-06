@@ -101,9 +101,10 @@ namespace FiscalShock.GUI {
                 playerShoot = GameObject.FindGameObjectWithTag("Player")?.GetComponentInChildren<PlayerShoot>(true);
             }
 
-            if (playerShoot.guns == null) {
+            if (playerShoot == null || playerShoot.guns == null) {
                 return;
             }
+
             // filled slots
             for (int i = 0; i < playerShoot.guns.Count; ++i) {
                 updateWeaponSlot(i);

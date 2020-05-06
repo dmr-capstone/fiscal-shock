@@ -92,7 +92,6 @@ public class HUD : MonoBehaviour
     /// Initialize values and references used by the HUD.
     /// </summary>
     private void Start() {
-        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         shotLoss.text = "";
         earn.text = "";
         fps.enabled = Settings.values.showFPS;
