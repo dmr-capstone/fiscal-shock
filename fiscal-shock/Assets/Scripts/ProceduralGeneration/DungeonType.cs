@@ -3,6 +3,12 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Configuration of a single dungeon "theme." These parameters are used
+    /// during dungeon generation. See existing themes for what to set up.
+    /// The graph parameters influence the shape and general characteristics
+    /// of the dungeon.
+    /// </summary>
     public class DungeonType : MonoBehaviour {
         /**********************************************************************/
         [Header("Graph Parameters")]

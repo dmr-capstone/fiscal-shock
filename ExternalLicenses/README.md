@@ -109,7 +109,9 @@ Audio assets are spread across the project.
 ----
 
 ## Bullet firing and impact noise
-*TBD*
+N/A
+
+@ericp275
 
 ----
 

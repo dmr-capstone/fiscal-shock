@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Behavior of the portal that sends the player deeper into the dungeon.
+    /// </summary>
     public class Delve : MonoBehaviour {
         private GameObject loadingScreen;
         private LoadingScreen loadScript;
@@ -23,6 +26,8 @@ namespace FiscalShock.Procedural {
 
         private void OnTriggerEnter(Collider collider) {
             if (collider.gameObject.tag == "Player") {
+                StateManager.totalFloorsVisited++;
+                StateManager.currentFloor++;
                 loadScript.startLoadingScreen("Dungeon");
             }
         }

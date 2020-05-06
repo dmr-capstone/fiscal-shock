@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// Data class to expose fields for a particular object that can be
+/// spawned during procedural generation.
+/// </summary>
 [System.Serializable]
 public class SpawnableObject {
     [Tooltip("Object prefab.")]
@@ -14,6 +18,15 @@ public class SpawnableObject {
     public bool alsoColorLight;
 }
 
+/// <summary>
+/// Data class to expose additional fields for enemies that can be spawned
+/// during procedural generation.
+/// This is currently not used and not up to date with all parameters of
+/// an enemy. The original intent was that certain dungeon themes could have
+/// different base stats for the same enemy.
+/// The enemy stat adjustment for difficulty adjustment does not use these
+/// values.
+/// </summary>
 [System.Serializable]
 public class SpawnableEnemy : SpawnableObject {
     [Tooltip("Base health value.")]

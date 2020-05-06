@@ -1,17 +1,37 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Behavior of an environmental object that explodes when struck by a
+/// projectile.
+/// </summary>
 public class ExplodingObject : MonoBehaviour {
+    [Tooltip("Sound effect to be played when exploding")]
     public AudioClip explosionNoise;
+
+    [Tooltip("Particle effect to display when exploding")]
     public GameObject explosionEffect;
+
+    /// <summary>
+    /// Reference to an audio source to play sound from
+    /// </summary>
     private AudioSource aso;
+
+    [Tooltip("Radius of the explosion. Actors caught in this radius will take damage.")]
     public float explosionRadius = 6f;
+
+    [Tooltip("Base damage of the explosion. The actual value is randomized, and also doubled for the player.")]
     public float explosionDamage = 30f;
+
+    /* Layer masks */
     private int PLAYER;
     private int ENEMY;
     private int EXPLOSIVE;
     private int hitMask;
+
+    /* References of things to hide/disable during explosion */
     private Renderer[] meshes;
     private Collider[] colliders;
+
     private bool exploding;
     private PlayerHealth player;
 
@@ -42,6 +62,11 @@ public class ExplodingObject : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Explode this object. Typically called when struck by a projectile, but
+    /// it could be called by something else. Some ideas include remote or
+    /// proximity mines.
+    /// </summary>
     public void explode() {
         exploding = true;
         // Damage things that were hit
@@ -55,6 +80,8 @@ public class ExplodingObject : MonoBehaviour {
             if (layerHit == PLAYER) {  // Player takes extra damage. It's really easy to profit with the dumb AI. Might change it back if the smart AI doesn't clump up.
                 player.takeDamage(randomizedDamage * 2);
             }
+
+            // Damage enemies, stun them, and make them flop around
             if (layerHit == ENEMY) {
                 EnemyHealth eh = hit.gameObject.GetComponentInChildren<EnemyHealth>();
                 if (eh != null) {
@@ -65,6 +92,8 @@ public class ExplodingObject : MonoBehaviour {
                     eh?.stun(3f);
                 }
             }
+
+            // Chain explosions
             if (layerHit == EXPLOSIVE) {
                 ExplodingObject boom = hit.gameObject.GetComponentInChildren<ExplodingObject>();
                 if (boom == null) {

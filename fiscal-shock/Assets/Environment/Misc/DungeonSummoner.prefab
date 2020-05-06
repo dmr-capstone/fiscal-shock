@@ -56,6 +56,12 @@ MonoBehaviour:
     type: 3}
   debtCollectorPrefab: {fileID: 6021063351833058460, guid: ea6b63c3f876b444cb970334eccd44a8,
     type: 3}
+  debugWeapons:
+  - {fileID: 1094064583168317089, guid: ba1a8906c0df00e5d9d82251b2832875, type: 3}
+  - {fileID: 3961932855569333518, guid: 0385b27ee1e40c61db8e25b36971ec03, type: 3}
+  debugCash: 1000
+  timesEntered: 1
+  currentFloor: 1
 --- !u!114 &2858400961614686392
 MonoBehaviour:
   m_ObjectHideFlags: 0

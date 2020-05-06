@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using FiscalShock.Graphs;
 
-namespace FiscalShock.Graphs {
+namespace FiscalShock.Procedural {
     /// <summary>
     /// Poisson disc sampling based on https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf.
     /// <para>Every point generated is guaranted to be at least
@@ -127,6 +128,13 @@ namespace FiscalShock.Graphs {
             return x > -1 && y > -1 && x < cols && y < rows;
         }
 
+        /// <summary>
+        /// Generates points on a 2D plane using the Poisson disc sampling
+        /// algorithm.
+        /// </summary>
+        /// <param name="minDistanceBetweenSamples">minimum distance allowed between points</param>
+        /// <param name="width">max width of the bounding box where points can be generated</param>
+        /// <param name="height">max height of the bounding box where points can be generated</param>
         public Poisson(float minDistanceBetweenSamples, int width, int height) {
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
@@ -138,8 +146,14 @@ namespace FiscalShock.Graphs {
             grid = new Vertex[rows*cols];
 
             // Pick a starting point. Could be random or a set point, like the center.
-            Vertex v = new Vertex(Random.Range(0f, width), Random.Range(0f, height));
+            Vertex v;
+            int x, y;
             // Add it to the grid and active list.
+            do {
+                v = new Vertex(Random.Range(0f, width), Random.Range(0f, height));
+                x = getGridValueOf(v.x);
+                y = getGridValueOf(v.y);
+            } while (!isIndexWithinGrid(x, y));
             grid[getIndexOfVertex(v)] = v;
             active.Add(v);
 
@@ -154,8 +168,8 @@ namespace FiscalShock.Graphs {
 
                     Vertex sample = getRandomPointAround(origin);
                     // Since these values could be negative and result in weird "indices," they need to be checked separately.
-                    int x = getGridValueOf(sample.x);
-                    int y = getGridValueOf(sample.y);
+                    x = getGridValueOf(sample.x);
+                    y = getGridValueOf(sample.y);
                     int index = getArrayIndex(x, y);
 
                     // If the point is within bounds and there is not already a point in this cell, check distance to neighbors.

@@ -23,6 +23,8 @@ TagManager:
   - Loading Screen
   - Assistant
   - Debt Collector
+  - Player Inventory
+  - Player Text
   layers:
   - Default
   - TransparentFX

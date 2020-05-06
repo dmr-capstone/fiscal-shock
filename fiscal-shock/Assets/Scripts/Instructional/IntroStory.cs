@@ -1,10 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using FiscalShock.GUI;
 
+/// <summary>
+/// Handles the story tutorial level events.
+/// </summary>
 public class IntroStory : MonoBehaviour {
+    public List<GameObject> tutorialWeapons;
+    public Inventory playerInventory;
     public TextMeshProUGUI storyLine1;
     public TextMeshProUGUI storyLine2;
     public GameObject player;
@@ -32,7 +37,7 @@ public class IntroStory : MonoBehaviour {
                                 "You clearly have some milk-flinging skills,",
                                 "You get money for every BOTCORP bot you take",
                                 "To protect your family, you must assume a new identity.",
-                                "Your codename is <i>Elegant Mess</i>. We expect great <s>profit</s> things from you."};
+                                "Your codename is "};
     private string[] storiesBottom = { "you must rebuild your credit and get out of debt.",
                                 "get out of all this just fine.",
                                 "legs too, heh heh).",
@@ -42,7 +47,7 @@ public class IntroStory : MonoBehaviour {
                                 "Follow me... I wanna test your skills.",
                                 "(You break it, you buy it!)",
                                 "<i>Press the Left Mouse Button to fire your weapon.</i>",
-                                "<i>Press 2 and 1 to switch between weapons</i>.",
+                                "<i>Press 2 or use the scroll wheel.</i>",
                                 "so here's our deal...",
                                 "down, you can use it to get yourself out of debt.",
                                 "",
@@ -56,33 +61,33 @@ public class IntroStory : MonoBehaviour {
     private Vector3 rotateFrom;
     private Vector3 rotateCameraFrom;
     private Vector3 stareAtMilkman = new Vector3(-75.06f, -4.36f, 114.66f);
-    private PlayerHealth healthScript;
     private PlayerShoot playerShoot;
     private MouseLook mouseLook;
 
-    void Start() {
+    private void Start() {
+        storyCamera = GameObject.FindGameObjectWithTag("MainCamera");
+        mouseLook = storyCamera.GetComponent<MouseLook>();
+        playerShoot = player.GetComponentInChildren<PlayerShoot>();
+        player.GetComponentInChildren<PlayerMovement>().enabled = false;
+
         StateManager.inStoryTutorial = true;
-        player = Instantiate(player, stareAtMilkman, Quaternion.Euler(1.47f, -37f, 0));
-        storyCamera = player.GetComponentInChildren<Camera>().gameObject;
+
+        playerShoot.enabled = false;
         introStory1 = storiesTop[storyPosition];
         introStory2 = storiesBottom[storyPosition];
         Time.timeScale = 0;
-        healthScript = player.GetComponent<PlayerHealth>();
-        healthScript.enabled = false;
-        PlayerMovement moveScript = player.GetComponent<PlayerMovement>();
-        moveScript.enabled = false;
-        mouseLook = storyCamera.GetComponent<MouseLook>();
         mouseLook.enabled = false;
-        playerShoot = player.GetComponentInChildren<PlayerShoot>();
-        playerShoot.enabled = false;
+        foreach (GameObject weapon in tutorialWeapons) {
+            GameObject realWeapon = Instantiate(weapon);
+            playerInventory.addWeapon(realWeapon);
+        }
         foreach (GameObject target in targets) {
             TargetBehavior behaviorScript = target.GetComponent<TargetBehavior>();
             behaviorScript.story = this;
         }
     }
 
-    // Update is called once per frame
-    void Update() {
+    private void Update() {
         showText();
         if (storyPosition == 6 && !part1 && (int) showing > introStory2.Length) {
             animationState = 1;
@@ -93,23 +98,56 @@ public class IntroStory : MonoBehaviour {
             weaponActive = true;
         }
 
-        if (part1 && storyPosition == 4 && (int) showing == introStory1.Length) {
-            if (delay < 12) {
-                showing -= textSpeed;
-                delay++;
-            }
-            else if (delay == 12) {
-                showing += 7;
-                delay++;
-                introStory1 = "Only <s>desperate</s>...  disposable... ";
-            }
-            else if (delay < 24) {
-                showing -= textSpeed;
-                delay++;
-            }
-            else {
-                showing += 7;
-                introStory1 = "Only <s>desperate</s>...  <s>disposable</s>...  noble and brave ";
+        // this code hides the italic and strikethrough tags in the text and creates a small delay before the strikethrough effect appears
+        if ((int) showing == introStory1.Length) {
+            if(storyPosition == 4 && part1) {
+                if (delay < 12) {
+                    showing -= textSpeed;
+                    delay++;
+                }
+                else if (delay == 12) {
+                    showing += 7;
+                    delay++;
+                    introStory1 = "Only <s>desperate</s>...  disposable... ";
+                }
+                else if (delay < 24) {
+                    showing -= textSpeed;
+                    delay++;
+                }
+                else if(delay < 25){
+                    delay++;
+                    showing += 7;
+                    introStory1 = "Only <s>desperate</s>...  <s>disposable</s>...  noble and brave ";
+                }
+            } else if(storyPosition == 13 && part1){
+                if(delay == 27){
+                    introStory1 = "Your codename is <i>Elegant Mess";
+                    showing += 3;
+                    delay++;
+                } else if(delay == 28){
+                    introStory1 = "Your codename is <i>Elegant Mess</i>. We expect great profit...";
+                    delay++;
+                    showing += 4;
+                } else if (delay < 45){
+                    showing -= textSpeed;
+                    delay++;
+                } else if (delay <46){
+                    delay++;
+                    showing += 7;
+                    introStory1 = "Your codename is <i>Elegant Mess</i>. We expect great <s>profit</s>... things from you.";
+                }
+            } else if(storyPosition == 8 && !part1){
+                if(delay == 25){
+                    delay++;
+                    showing += 4;
+                    introStory1 = "<i>Press the Left Mouse Button to fire your weapon</i>.";
+                }
+            } else if(storyPosition == 9 && !part1){
+                 if(delay == 26){
+                    delay++;
+                    showing += 4;
+                    introStory1 = "<i>Press 2 and 1 to switch between weapons</i>.";
+                }
             }
         }
 
@@ -122,9 +160,19 @@ public class IntroStory : MonoBehaviour {
             storyLine2.text = "";
         }
         if (Input.GetMouseButtonDown(0) && !weaponActive) {
+            //If the text has not finished displaying clicking will all show the text
             if (part1 || (int) showing <= introStory2.Length || (storyPosition == 6 && animationFrame < 75)) {
                 if (storyPosition == 4) {
                     introStory1 = "Only <s>desperate</s>...  <s>disposable</s>...  noble and brave ";
+                    delay = 25;
+                } else if (storyPosition == 13) {
+                    introStory1 = "Your codename is <i>Elegant Mess</i>. We expect great <s>profit</s>... things from you.";
+                } else if (storyPosition == 8) {
+                    introStory2 = "<i>Press the Left Mouse Button to fire your weapon</i>.";
+                    delay = 26;
+                } else if (storyPosition == 9) {
+                    introStory2 = "<i>Press 2 and 1 to switch between weapons</i>.";
+                    delay = 27;
                 }
                 storyLine1.text = introStory1;
                 part1 = false;
@@ -141,10 +189,10 @@ public class IntroStory : MonoBehaviour {
                     animationFrame = 30;
                     animationState = 2;
                     weaponActive = true;
-                    // Debug.Log(animationState + " ---  " + animationFrame);
                     player.transform.position = new Vector3(-91.3f, -4.34f, 107.91f);
                 }
             }
+            //If the text has finished displaying, cicking will move the storyposition forward
             else {
                 if (storyPosition == 9) {
                     if (weaponSwitched) {
@@ -169,13 +217,16 @@ public class IntroStory : MonoBehaviour {
                     }
                     introStory1 = storiesTop[storyPosition];
                     introStory2 = storiesBottom[storyPosition];
-                    showing = 0;
+                    if(storyPosition == 8){
+                        showing = 2;
+                    } else {
+                        showing = 0;
+                    }
                     part1 = true;
                     storyLine2.text = "";
                 }
                 else {
-                    Destroy(player);
-                    StateManager.inStoryTutorial = false;
+                    StateManager.resetToDefaultState();
                     Settings.values.sawStoryTutorial = true;
                     Time.timeScale = 1;
                     SceneManager.LoadScene("Hub");
@@ -183,7 +234,7 @@ public class IntroStory : MonoBehaviour {
             }
         }
 
-        if (Input.GetKeyDown(Settings.weaponTwoKey)) {
+        if (playerShoot.slot == 1) {
             if (animationState == 4) {
                 foreach (GameObject target in targets) {
                     TargetBehavior behaviorScript = target.GetComponent<TargetBehavior>();
@@ -193,6 +244,8 @@ public class IntroStory : MonoBehaviour {
                 animationState++;
             }
         }
+
+        //The animation state controls the ovement of the camera and the milkman throughout the story
         if (animationState == 1) {
             if (animationFrame < 7) {
                 milkman.transform.position += new Vector3(0, 0, 0.038f);
@@ -206,14 +259,17 @@ public class IntroStory : MonoBehaviour {
             else if (animationFrame < 63) {
                 milkman.transform.rotation = Quaternion.Euler(new Vector3(0, 144 + 19.45f * (7 - (animationFrame - 53)), 0));
             }
-            if (animationFrame > 16 && animationFrame < 39) {
+            if (animationFrame < 17){
+
+            }
+            else if (animationFrame > 16 && animationFrame < 39) {
                 player.transform.rotation = Quaternion.Euler(new Vector3(1.47f, 14 - 3f * animationFrame, 0));
             }
             else if (animationFrame < 54) {
                 player.transform.position += new Vector3(-0.25f, 0, -0.056f);
             }
-            else if (animationFrame < 74) {
-                player.transform.position += new Vector3(-0.25f, 0, -0.056f);
+            else if (animationFrame < 75) {
+                player.transform.position += new Vector3(-0.25f, 0, -0.045f);
                 animationFrame++;
             }
         }
@@ -254,14 +310,20 @@ public class IntroStory : MonoBehaviour {
             }
         }
     }
-
+    /// <summary>
+    /// this method keeps track of how many targets the player has hit. If enough have been hit, the story position is increased.
+    /// </summary>
     public void hitTarget() {
         targetsHit++;
         if (targetsHit == 6) {
             storyPosition++;
             introStory1 = storiesTop[storyPosition];
             introStory2 = storiesBottom[storyPosition];
-            showing = 0;
+            if(storyPosition == 9){
+                showing = 2;
+            } else {
+                showing = 0;
+            }
             part1 = true;
             storyLine2.text = "";
             animationState++;
@@ -295,7 +357,10 @@ public class IntroStory : MonoBehaviour {
         }
     }
 
-    void showText() {
+    /// <summary>
+    /// This function increases how much of the text is showing until all the text is showing.
+    /// </summary>
+    private void showText() {
         if (showing < 0) {
             showing = 0;  // clicking too fast causes errors
         }
