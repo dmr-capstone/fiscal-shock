@@ -100,6 +100,7 @@ namespace FiscalShock.GUI {
                 // try to find it again
                 playerShoot = GameObject.FindGameObjectWithTag("Player")?.GetComponentInChildren<PlayerShoot>(true);
             }
+
             if (playerShoot.guns == null) {
                 return;
             }
