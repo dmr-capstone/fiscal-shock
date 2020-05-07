@@ -15,7 +15,9 @@ namespace FiscalShock.Graphs {
         public bool isWall { get; set; }
 
         // PATHFINDING ONLY
-        public bool isWalkable { get; set; } = false;
+        /// <summary>
+        /// Whether or not this edge is usable in pathfinding.
+        /// </summary>
         internal bool toIgnore { get; set; } = false;
 
         public Edge(Vertex a, Vertex b) {

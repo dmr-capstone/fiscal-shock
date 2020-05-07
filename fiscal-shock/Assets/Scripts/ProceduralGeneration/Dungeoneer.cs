@@ -453,6 +453,7 @@ namespace FiscalShock.Procedural {
             spawner.transform.position = spawnPoint.toVector3AtHeight(currentDungeonType.wallHeight * 0.8f);
             player = spawner.spawnPlayer();
 
+            // Set the player's original spawn point.
             PlayerMovement pmScript = player.GetComponent<PlayerMovement>();
             pmScript.originalSpawn = spawnPoint;
 
@@ -472,7 +473,7 @@ namespace FiscalShock.Procedural {
             // Enable firing script (disabled in hub)
             PlayerShoot shootScript = player.GetComponentInChildren<PlayerShoot>();
             shootScript.enabled = true;
-
+ 
             if (StateManager.startedFromDungeon) {
                 // Give player weapons when starting in dungeon, since that implies it's a dev starting in the editor
                 Debug.Log("Looks like you launched this scene directly from the editor. Here's some free stuff...");
@@ -487,12 +488,15 @@ namespace FiscalShock.Procedural {
             // Enable temporary player invincibility on spawn
             StartCoroutine(player.GetComponentInChildren<PlayerHealth>().enableIframes(5f));
 
-            Debug.Log(pmScript.originalSpawn.vector);
-
-            // Set the Debt Collector spawn point because ******* script execution order.
+            // Set the Debt Collector spawn point.
+            // (This didn't actually work, but anyone that feels like fixing this will know it wasn't this.)
             debtCollector.GetComponentInChildren<DebtCollectorMovement>().spawnPoint = dcSpawnPoint;
         }
 
+        /// <summary>
+        /// Use the prefab containing the MovementTrigger to create trigger zones that will
+        /// update the current cell of the player and debt collector.
+        /// </summary>
         private void setPlayerCollisions() {
             foreach (Vertex vertex in navigableDelaunay.vertices) {
                 if (vertex.cell.isClosed) {
@@ -506,11 +510,13 @@ namespace FiscalShock.Procedural {
                             bbox.maxX - width / 2, 1, bbox.maxY - height / 2
                         );
 
+                        // Create and size the trigger zone.
                         GameObject triggerContainer = Instantiate(triggerPrefab, bboxCenter, triggerPrefab.transform.rotation);
                         triggerContainer.transform.localScale = new Vector3(bbox.maxX - bbox.minX, 1, bbox.maxY-bbox.minY);
                         triggerContainer.name = $"Trigger for Cell {vertex.cell.id}";
                         triggerContainer.transform.parent = cellColliderOrganizer.transform;
 
+                        // Set the cell that this trigger zone belongs to.
                         cellTrigger = triggerContainer.GetComponent<MovementTrigger>();
                         cellTrigger.cellSite = vertex;
                     }
@@ -518,14 +524,19 @@ namespace FiscalShock.Procedural {
             }
         }
 
+        /// <summary>
+        /// Place the debt collector in the scene.
+        /// </summary>
         private void spawnDebtCollector() {
+            // The available points at which the debt collector can spawn.
             List<Vertex> spawnPoints = navigableDelaunay.vertices;
 
             Vertex spawnPoint;
-            do {
+            do { // Don't spawn over a portal.
                 spawnPoint = spawnPoints[mt.Next(spawnPoints.Count - 1)];
             } while (spawnPoint.cell.hasPortal);
 
+            // Find or instantiate the debt collector and save this point as its spawn point.
             debtCollector = GameObject.FindGameObjectWithTag("Debt Collector");
 
             if (debtCollector == null) {

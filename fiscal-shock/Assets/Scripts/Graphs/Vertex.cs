@@ -25,8 +25,9 @@ namespace FiscalShock.Graphs {
         public List<Edge> incidentEdges { get; set; } = new List<Edge>();
 
         // PATHFINDING ONLY
-        internal bool isOnWall { get; set; } = false;
-        internal bool walkable { get; set; } = false;
+        /// <summary>
+        /// Whether or not this vertex is usable in pathfinding.
+        /// </summary>
         internal bool toIgnore { get; set; } = false;
 
         /* Begin overloaded constructors */

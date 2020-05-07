@@ -23,34 +23,123 @@ namespace FiscalShock.AI {
 
         [Tooltip("How close the player needs to be before being pursued.")]
         public float visionRadius = 35f;
+
+        /// <summary>
+        /// Player object.
+        /// </summary>
         public GameObject player;
+
+        /// <summary>
+        /// Whether or not the debt collector has been stunned.
+        /// </summary>
         public bool stunned { get; set; }
-        public float distanceFromPlayer3D { get; private set; }
+
+        /// <summary>
+        /// Distance from the player in 2D space.
+        /// </summary>
         public float distanceFromPlayer2D { get; private set; }
+
+        /// <summary>
+        /// Controller used to move the debt collector.
+        /// </summary>
         private CharacterController controller;
 
         // Pathfinding
+        
+        /// <summary>
+        /// The point at which the player originally spawned.
+        /// </summary>
         public Vertex spawnPoint { get; set; }
+        
+        /// <summary>
+        /// The Delaunay vertex of the last trigger zone that the debt collector entered.
+        /// </summary>
         internal Vertex lastVisitedNode { get; set; } = null;
+
+        /// <summary>
+        /// The vertex corresponding to the pathfinding destination.
+        /// </summary>
         private Vertex nextDestinationNode = null;
+
+        /// <summary>
+        /// Reference to the enemy movement state manager.
+        /// </summary>
         private Hivemind hivemind;
+
+        /// <summary>
+        /// Reference to the enemy controlling script that contains the A*.
+        /// Useful if wanted to expand A* to other enemy characters.
+        /// </summary>
         private AStar pathfinder;
+
+        /// <summary>
+        /// The path returned from pathfinding.
+        /// </summary>
         private Stack<Vertex> path;
+
+        /// <summary>
+        /// The pathfinding destination.
+        /// </summary>
         private Vector3 nextDestination;
+
+        /// <summary>
+        /// The direction of the next destination point in 2D space, transposed to 3D.
+        /// </summary>
         private Vector3 nextFlatDir;
+
+        /// <summary>
+        /// The amount of updates that have passed since the last path recalculation.
+        /// </summary>
         private int recalculationCount = -1;
+
+        /// <summary>
+        /// The number of updates necessary to recalculate the path.
+        /// </summary>
         private int recalculationRate = 500;
 
         // Raycasting
+
+        /// <summary>
+        /// The 0 degree whisker for raycasting.
+        /// </summary>
         private Vector3 forwardWhisker;
+
+        /// <summary>
+        /// The -150, -120, -75, 75, 120, 150, and 180 degree whiskers for raycasting.
+        /// </summary>
         private Vector3 left75, right75, left120, right120, left150, right150, backward;
+
+        /// <summary>
+        /// How long the whiskers should be.
+        /// </summary>
         private float whiskerLength = 5f;
+
+        /// <summary>
+        /// How often the raycast should happen.
+        /// </summary>
         private int whiskerSampleRate = 10;
+
+        /// <summary>
+        /// The updates passed since a raycast last happened.
+        /// </summary>
         private int whiskerSampleCounter = 0;
 
-        // Used to determine if the debt collector is stuck.
+        /// <summary>
+        /// The amount of updates that should pass before the debt collector is teleported
+        /// to a new location, probably due to being stuck in a corner.
+        /// </summary>
         private int teleportationSaveRate =  300;
+
+        /// <summary>
+        /// The amount of time that has passed since the debt collector entered a new
+        /// trigger zone.
+        /// </summary>
         internal int saveCounter = 0;
+
+        /// <summary>
+        /// How high up the debt collector should be teleported. Needed because teleporting
+        /// on top of obstacles.
+        /// </summary>
         private float teleportationHeight;
 
         /// <summary>
@@ -115,6 +204,9 @@ namespace FiscalShock.AI {
         /// </summary>
         private float footSize;
 
+        /// <summary>
+        /// Initializes the necessary fields for the debt collector and initializes the AStar script.
+        /// </summary>
         void Start() {
             if (player == null) {
                 player = GameObject.FindGameObjectWithTag("Player");
@@ -155,11 +247,15 @@ namespace FiscalShock.AI {
             #endif
         }
 
-        // MAYBE: Adjust so that takes the step distance into account.
-        // MAYBE: Need to use both the target direction AND the current foward angle to determine the safe direction!!
-        private Vector3 findSafeDirection(Vector3 target, Vector3 currentForward) {
+        /// <summary>
+        /// Detect any obtacles and determine the best direction to go towards.
+        /// </summary>
+        /// <param name="target">The direction against which to raycast.</param>
+        /// <returns>A vector representing the safest direction to go towards.</returns>
+        private Vector3 findSafeDirection(Vector3 target) {
             forwardWhisker = target;
 
+            // Only check if the raycasts are due for checking.
             if (whiskerSampleCounter >= whiskerSampleRate) {
                 whiskerSampleCounter = 0;
 
@@ -204,7 +300,6 @@ namespace FiscalShock.AI {
                     }
 
                     // Neither left nor right whisker hit.
-                    // TODO: Check the necessity of this case?
                     else {
                         return left75;
                     }
@@ -240,7 +335,6 @@ namespace FiscalShock.AI {
                     }
 
                     // Neither left nor right whisker hit.
-                    // TODO: Check the necessity of this case?
                     else {
                         return left120;
                     }
@@ -276,16 +370,18 @@ namespace FiscalShock.AI {
                     }
 
                     // Neither left nor right whisker hit.
-                    // TODO: Check the necessity of this case?
                     else {
                         return left150;
                     }
 
                     // If absolutely no other case works, return the backwards angle.
                     backward = Vector3.Reflect(forwardWhisker * whiskerLength, hit.normal);
+
+                    // Draw the backwards ray.
                     #if UNITY_EDITOR
                     Debug.DrawRay(transform.position, backward * whiskerLength, Color.cyan, 1);
                     #endif
+
                     return backward;
                 }
             }
@@ -305,11 +401,9 @@ namespace FiscalShock.AI {
             Vector2 flatPosition = new Vector2(transform.position.x, transform.position.z);
             Vector2 playerFlatPosition = new Vector2(player.transform.position.x, player.transform.position.z);
 
-            distanceFromPlayer3D = Vector3.Distance(player.transform.position, transform.position);
-            // Need 2D distance - will only consider how far away enemy is from player on x,z plane.
             distanceFromPlayer2D = Vector2.Distance(playerFlatPosition, flatPosition);
 
-            // Increase the raycast sample rate counter.
+            // Increase the raycast sample rate counter and the save counter.
             whiskerSampleCounter++;
             saveCounter++;
 
@@ -317,6 +411,7 @@ namespace FiscalShock.AI {
 
             // DC has been in the same cell for too long
             if (saveCounter >= teleportationSaveRate) {
+                // Easy to determine teleportation destination when the path is filled.
                 if (path != null && path.Count > 0) {
                     if (nextDestinationNode == null) {
                         // Grab the next destination from the path.
@@ -333,8 +428,11 @@ namespace FiscalShock.AI {
 
                     // Turn on the character controller again.
                     controller.enabled = true;
+
+                    // If don't reset this value, gets stuck because never entered via the colliders.
                     lastVisitedNode = nextDestinationNode;
 
+                    // Set a new destination or prepare to recalculate the path.
                     if (path.Count > 0) {
                         nextDestinationNode = path.Pop();
                     }
@@ -346,20 +444,23 @@ namespace FiscalShock.AI {
                 }
 
                 else {
-                    // Spawn point is default. Should technically never be used.
+                    // Determine a valid cell to transport to.
                     Vertex teleportTo = lastVisitedNode.cell.neighbors.First(c => c.reachable).site;
 
+                    // Move the debt collector to the location.
                     controller.enabled = false;
                     transform.position = new Vector3(teleportTo.x, teleportationHeight, teleportTo.y);
                     controller.enabled = true;
                     lastVisitedNode = teleportTo;
 
+                    // In case the path count was 0 but the path wasn't yet set to null.
                     if (path != null) {
                         path = null;
                         recalculationCount = 0;
                     }
                 }
 
+                // Now at a new location, so can reset the counter.
                 saveCounter = 0;
                 return;
             }
@@ -373,8 +474,9 @@ namespace FiscalShock.AI {
                 }
 
                 // Obtain the "safe" direction to go.
-                Vector3 safeDir = findSafeDirection(flatPlayerDirection, transform.forward);
+                Vector3 safeDir = findSafeDirection(flatPlayerDirection);
 
+                // Draw the direction to the player. 
                 #if UNITY_EDITOR
                 Debug.DrawRay(transform.position, safeDir * whiskerLength, Color.black, 1);
                 #endif
@@ -395,26 +497,16 @@ namespace FiscalShock.AI {
                 #endif
                 path = pathfinder.findPath(lastVisitedNode, hivemind.lastPlayerLocation);
 
-                // DEBUG: Move into debug code or remove.
-                // StreamWriter writer = new StreamWriter("/home/ybautista/Desktop/UnityOutput/new_path.txt");
-                // Vertex[] pathNodes = path.ToArray();
-
-                // foreach (Vertex node in pathNodes) {
-                //     writer.Write(node.vector + "\n");
-                // }
-
-                // writer.Close();
-
-                // WARNING: In the correct conditions, which are very very few, this code
-                // could lead into an infinite loop where the path always comes out
-                // null and this function returns infinitely.
+                // Was extremely close to destination. A path was not needed.
                 if (path.Count == 0) {
                     path = null;
                     return;
                 }
 
-                // Assuming the path contains something, remove the first node off
-                // the path.
+                // DEBUG: Uncomment if behavior is unexpected.
+                // outputPathToFile();
+
+                // Start navigating path by obtaining first vertex.
                 nextDestinationNode = path.Pop();
 
                 // DEBUG: Remove or set debugging code.
@@ -430,11 +522,13 @@ namespace FiscalShock.AI {
                 return;
             }
 
+            // Prepare for recalculation of path.
             if (recalculationCount >= recalculationRate) {
                 path = null;
                 recalculationCount = 0;
             }
 
+            // Obtain next node or prepare for recalculation if triggered zone site and destination are equal.
             if (lastVisitedNode.Equals(nextDestinationNode)) {
                 if (path.Count > 0) {
                     nextDestinationNode = path.Pop();
@@ -448,10 +542,12 @@ namespace FiscalShock.AI {
                     Vector3 unnormDirection = nextDestination - transform.position;
                     nextFlatDir = new Vector3(unnormDirection.x, 0, unnormDirection.z).normalized;
 
-                    Vector3 safeDir = findSafeDirection(nextFlatDir, transform.forward);
+                    Vector3 safeDir = findSafeDirection(nextFlatDir);
 
                     // Move in the safe direction.
                     applyMovement(safeDir);
+
+                    // Because used pathfinding, must get closer to recalculation.
                     recalculationCount++;
                     return;
                 }
@@ -501,6 +597,11 @@ namespace FiscalShock.AI {
                 isJumping = true;
             }
         }
+
+        /*
+            void OnTriggerEnter(Collider col) {
+                if (col.gameObject.tag == "Player") {
+        */
 
         private void OnControllerColliderHit(ControllerColliderHit col) {
             if (stunned) {  // Can stun and touch without game over, to some extent
@@ -562,6 +663,20 @@ namespace FiscalShock.AI {
         /// <param name="duration">stun duration in seconds</param>
         public void externalStun(float duration) {
             StartCoroutine(stun(duration));
+        }
+
+        /// <summary>
+        /// Method that outputs the vertices of the path into a text file.
+        /// </summary>
+        private void outputPathToFile() {
+            StreamWriter writer = new StreamWriter(string.Format("{0}/path.txt", Directory.GetCurrentDirectory()));
+            Vertex[] pathNodes = path.ToArray();
+
+            foreach (Vertex node in pathNodes) {
+                writer.Write(node.vector + "\n");
+            }
+
+            writer.Close();
         }
     }
 }

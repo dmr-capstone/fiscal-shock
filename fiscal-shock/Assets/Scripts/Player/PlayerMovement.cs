@@ -46,6 +46,9 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask obstacleMask;
     public LayerMask decorationMask;
 
+    /// <summary>
+    /// The Delaunay triangulation vertex where the player originally spawned.
+    /// </summary>
     internal Vertex originalSpawn { get; set; }
 
     /// <summary>
@@ -64,11 +67,13 @@ public class PlayerMovement : MonoBehaviour
     /// movement with the new system handles slightly differently and was not
     /// implemented fully.
     /// </summary>
-    /// <returns></returns>
     private void Awake() {
         gameObject.GetComponent<PlayerInput>().actions = inputActions;
     }
 
+    /// <summary>
+    /// Assigns the initial player location value in the hivemind.
+    /// </summary>
     private void Start() {
         // TODO: This should really be in Hivemind's start, but we ended up not using Hivemind
         GameObject dungeoneer = GameObject.Find("DungeonSummoner");

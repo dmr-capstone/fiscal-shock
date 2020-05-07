@@ -58,7 +58,6 @@ public class AnimationManager : MonoBehaviour {
     /// Whether the animation manager is set up and ready to start
     /// serving animation requests.
     /// </summary>
-    /// <value></value>
     public bool isReady { get; private set; }
 
     /// <summary>

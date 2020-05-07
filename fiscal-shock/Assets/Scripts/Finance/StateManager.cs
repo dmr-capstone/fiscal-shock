@@ -14,57 +14,48 @@ public class Loan
     /// Unique numeric ID of this loan. Must be unique to pay off the
     /// correct loan!
     /// </summary>
-    /// <value></value>
     public int ID { get; }
 
     /// <summary>
     /// Amount due on this loan. Increases by day with interest.
     /// </summary>
-    /// <value></value>
     public float total { get; set; }
 
     /// <summary>
     /// Interest rate on this loan. The rate remains the same, even if the
     /// player's credit rating drops or rises.
     /// </summary>
-    /// <value></value>
     public float rate { get; }
 
     /// <summary>
     /// Whether the player made a payment on this loan recently.
     /// </summary>
-    /// <value></value>
     public bool paid { get; set; }
 
     /// <summary>
     /// The type of loan.
     /// </summary>
-    /// <value></value>
     public LoanType type { get; }
 
     /// <summary>
     /// How many days ago this loan was taken out. Factored into credit rating.
     /// </summary>
-    /// <value></value>
     public int age { get; set; }
 
     /// <summary>
     /// Original amount due on this loan, with no interest applied.
     /// </summary>
-    /// <value></value>
     public float originalAmount { get; }
 
     /// <summary>
     /// Creditor ID.
     /// </summary>
-    /// <value></value>
     public string lender { get; }
 
     /// <summary>
     /// Amount of collateral/security deposit. Will be paid back to the player
     /// when the full balance of the loan is paid off.
     /// </summary>
-    /// <value></value>
     public float collateral { get; }
 
     /// <summary>
@@ -73,7 +64,6 @@ public class Loan
     /// and other loan types have a 1 day grace period before interest begins
     /// accruing.
     /// </summary>
-    /// <value></value>
     public bool inGracePeriod { get; set; }
 
     /// <summary>
@@ -157,7 +147,6 @@ public static class StateManager
     /// <summary>
     /// Current cash on hand. Cash on hand is the player's health and ammo.
     /// </summary>
-    /// <value></value>
     public static float cashOnHand { get; set; } = DefaultState.cashOnHand;
 
     /// <summary>
@@ -185,7 +174,6 @@ public static class StateManager
     /// <summary>
     /// Next available loan ID.
     /// </summary>
-    /// <value></value>
     public static int nextID { get; set; } = DefaultState.nextID;
 
     /// <summary>
@@ -218,7 +206,6 @@ public static class StateManager
     /// <summary>
     /// Current credit score of the player.
     /// </summary>
-    /// <value></value>
     public static float creditScore { get; set; } = DefaultState.creditScore;
 
     /// <summary>
@@ -454,7 +441,6 @@ public static class StateManager
     /// <summary>
     /// Values associated with the Poor credit rating
     /// </summary>
-    /// <value></value>
     public static CreditRating PoorCredit = new CreditRating {
         min = 350,
         max = 450,
@@ -488,7 +474,6 @@ public static class StateManager
     /// <summary>
     /// Values associated with the Excellent credit rating
     /// </summary>
-    /// <value></value>
     public static CreditRating ExcellentCredit = new CreditRating {
         min = 650,
         max = 850,

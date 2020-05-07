@@ -44,7 +44,6 @@ public class ShopScript : MonoBehaviour {
     /// <summary>
     /// Track whether the player can interact with this shop.
     /// </summary>
-    /// <value></value>
     public bool playerIsInTriggerZone { get; private set; } = false;
 
     /// <summary>

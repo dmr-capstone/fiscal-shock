@@ -3,9 +3,24 @@ using FiscalShock.Graphs;
 using FiscalShock.AI;
 
 namespace FiscalShock.Pathfinding {
+    /// <summary>
+    /// Class describing a trigger zone associated with a cell.
+    /// </summary>
     public class MovementTrigger : MonoBehaviour {
+
+        /// <summary>
+        /// The cell vertex with which this trigger is associated.
+        /// </summary>
         public Vertex cellSite { get; set; }
-        private Hivemind hivemind { get; set; }
+
+        /// <summary>
+        /// Used to set the last visited location of the player.
+        /// </summary>
+        private Hivemind hivemind;
+
+        /// <summary>
+        /// Used to set the last visited location of the debt collector.
+        /// </summary>
         private DebtCollectorMovement dcMovement;
 
         void Start() {

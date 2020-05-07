@@ -120,7 +120,6 @@ public class InGameMenu : MonoBehaviour {
     /// Dynamic adjustment of the mouse sensitivity value based on the slider
     /// adjustment
     /// </summary>
-    /// <value></value>
     public float mouseSensitivity {
         get => Settings.mouseSensitivity;
         set => Settings.mouseSensitivity = value;

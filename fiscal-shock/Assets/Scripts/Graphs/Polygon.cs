@@ -24,7 +24,7 @@ namespace FiscalShock.Graphs {
         /// Without edges, it is impossible to know the correct area, as the
         /// polygon could be self-intersecting.
         /// </summary>
-        /// <param name="vs"></param>
+        /// <param name="vs">The list of vertices from which to create the polygon.</param>
         public Polygon(List<Vertex> vs) {
             vertices = vs;
         }
@@ -66,7 +66,7 @@ namespace FiscalShock.Graphs {
         /// function on self-intersecting polygons will result in unexpected
         /// answers.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Area of the polygon.</returns>
         public double getArea() {
             if (sides.Count < 3) {
                 return 0;
@@ -87,7 +87,7 @@ namespace FiscalShock.Graphs {
         /// Orders vertices counter-clockwise based on their angles to an
         /// interior point
         /// </summary>
-        /// <param name="centroid"></param>
+        /// <param name="centroid">Center point around which vertices are ordered.</param>
         public void orderVerticesCounterClockwise(Vertex centroid) {
             List<Vertex> ordered = new List<Vertex>();
 
@@ -103,7 +103,7 @@ namespace FiscalShock.Graphs {
         /// <summary>
         /// Gets the bounding box coordinates of this polygon from the minimum and maximum vertex coordinates
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The polygon representing the bounding pox of this polygon.</returns>
         public Polygon getBoundingBox() {
             if (vertices.Count < 3) {
                 return null;
@@ -212,6 +212,11 @@ namespace FiscalShock.Graphs {
         public VoronoiRoom room { get; set; }
 
         // PATHFINDING ONLY
+
+        /// <summary>
+        /// Whether or not this can be reached. Typically, only cells that are
+        /// walled in are not exactly traditional.
+        /// </summary>
         public bool reachable = true;
 
         public Cell(Vertex delaunayVertex) {
