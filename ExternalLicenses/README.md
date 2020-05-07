@@ -26,7 +26,7 @@ Graphics assets are spread across the project. Assets from the Unity Asset Store
 
 Author: rubberduck
 
-License: [CC0 Public Domain](http://creativecommons.org/publicdomain/zero/1.0/)
+License: [CC0 1.0](http://creativecommons.org/publicdomain/zero/1.0/)
 
 ----
 ## Icons
@@ -48,7 +48,7 @@ License: [TurboSquid Royalty Free License](https://blog.turbosquid.com/royalty-f
 
 Author: yughues
 
-License: [CC0 Public Domain](http://creativecommons.org/publicdomain/zero/1.0/)
+License: [CC0 1.0](http://creativecommons.org/publicdomain/zero/1.0/)
 
 ----
 ## Raygun
@@ -97,7 +97,8 @@ Audio assets are spread across the project.
 
 1. [Bullet firing and impact noise](#bullet-firing-and-impact-noise)
 1. [Cash payment failure](#cash-payment-failure-sound)
-1. [Cash payment succes](#cash-payment-success-sound)
+1. [Cash payment success](#cash-payment-success-sound)
+1. [Debt Collector](#debt-collector)
 1. [Dry-firing](#dry-firing)
 1. [Dungeon and hub themes](#dungeon-and-hub-themes)
 1. [Explosion noise](#explosion-noise)
@@ -130,6 +131,16 @@ License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
 Author: kiddpark
 
 License: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
+----
+## Debt Collector
+[Original](https://freesound.org/people/harrietniamh/sounds/400184/)
+
+Author: harrietniamh
+
+License: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
+Modifications: Reduced pitch and speed.
 
 ----
 

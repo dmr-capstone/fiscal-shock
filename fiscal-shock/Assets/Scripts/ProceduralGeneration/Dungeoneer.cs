@@ -81,8 +81,8 @@ namespace FiscalShock.Procedural {
             // have different "configurations" of the same theme
             // and pick randomly later
             currentDungeonType = dungeonThemes
-                //.Where(d => d.typeEnum == StateManager.selectedDungeon)
-                .Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
+                .Where(d => d.typeEnum == StateManager.selectedDungeon)
+                // .Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
                 .Select(d => d.gameObject)
                 .First()
                 .GetComponent<DungeonType>();
