@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using FiscalShock.AI;
 
 /// <summary>
 /// Behavior of an environmental object that explodes when struck by a
@@ -26,6 +27,7 @@ public class ExplodingObject : MonoBehaviour {
     private int PLAYER;
     private int ENEMY;
     private int EXPLOSIVE;
+    private int DEBT_COLLECTOR;
     private int hitMask;
 
     /* References of things to hide/disable during explosion */
@@ -40,7 +42,8 @@ public class ExplodingObject : MonoBehaviour {
         PLAYER = LayerMask.NameToLayer("Player");
         ENEMY = LayerMask.NameToLayer("Enemy");
         EXPLOSIVE = LayerMask.NameToLayer("Explosive");
-        hitMask = (1 << PLAYER) | (1 << ENEMY) | (1 << EXPLOSIVE);
+        DEBT_COLLECTOR = LayerMask.NameToLayer("DC Movement");
+        hitMask = (1 << PLAYER) | (1 << ENEMY) | (1 << EXPLOSIVE) | (1 << DEBT_COLLECTOR);
         meshes = GetComponentsInChildren<Renderer>();
         colliders = GetComponentsInChildren<Collider>();
         player = GameObject.FindGameObjectWithTag("Player").GetComponentInChildren<PlayerHealth>();
@@ -92,13 +95,14 @@ public class ExplodingObject : MonoBehaviour {
                     eh?.stun(3f);
                 }
             }
+            if (layerHit == DEBT_COLLECTOR) {
+                DebtCollectorMovement dcm = hit.gameObject.GetComponentInChildren<DebtCollectorMovement>() ?? hit.gameObject.GetComponentInParent<DebtCollectorMovement>();
+                dcm?.externalStun(Random.Range(3f, 8f));
+            }
 
             // Chain explosions
             if (layerHit == EXPLOSIVE) {
-                ExplodingObject boom = hit.gameObject.GetComponentInChildren<ExplodingObject>();
-                if (boom == null) {
-                    boom = hit.gameObject.GetComponentInParent<ExplodingObject>();
-                }
+                ExplodingObject boom = hit.gameObject.GetComponentInChildren<ExplodingObject>() ?? hit.gameObject.GetComponentInParent<ExplodingObject>();
                 if (boom != null && !boom.exploding) {
                     boom.explode();
                 }

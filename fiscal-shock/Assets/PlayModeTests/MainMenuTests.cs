@@ -19,12 +19,28 @@ namespace PlayModeTests {
             // should be at the main menu
             Assert.AreEqual("Menu", SceneManager.GetActiveScene().name);
             // click the play button
+            Settings.values.sawStoryTutorial = false;
             TestUtils.ClickButton("PlayButton");
             // should load the hub within 10s
             yield return TestUtils.AssertSceneLoaded("Story");
             Assert.AreEqual("Story", SceneManager.GetActiveScene().name);
         }
 
+        [UnityTest]
+        public IEnumerator testMainMenuPlayButtonToHub() {
+            // load the menu
+            SceneManager.LoadScene("Menu");
+            // wait 10s for menu load
+            yield return TestUtils.AssertSceneLoaded("Menu");
+            // should be at the main menu
+            Assert.AreEqual("Menu", SceneManager.GetActiveScene().name);
+            // click the play button
+            Settings.values.sawStoryTutorial = true;
+            TestUtils.ClickButton("PlayButton");
+            // should load the hub within 10s
+            yield return TestUtils.AssertSceneLoaded("Hub");
+            Assert.AreEqual("Hub", SceneManager.GetActiveScene().name);
+        }
         /*[Test]
         public void testFail() { Assert.AreEqual(0, 1); }*/
     }

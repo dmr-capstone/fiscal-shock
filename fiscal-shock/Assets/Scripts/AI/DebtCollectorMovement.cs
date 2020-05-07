@@ -135,7 +135,7 @@ namespace FiscalShock.AI {
 
             // Set stun thresholds.
             stunThresholdModifier = (float)Mathf.Log10(Mathf.Pow(StateManager.totalFloorsVisited, 0.3f)) + StateManager.totalFloorsVisited/4.0f + 1.0f;
-            stunThreshold = ((float)Mathf.Pow(StateManager.totalDebt, 1.5f) / 3333.0f + 5) * stunThresholdModifier;
+            stunThreshold = ((float)Mathf.Pow(StateManager.totalDebt, 1.7f) / 3333.0f + 15) * stunThresholdModifier;
 
             // Set speed.
             if (float.IsNaN(debtSpeedMod) || float.IsInfinity(debtSpeedMod)) {
@@ -534,6 +534,12 @@ namespace FiscalShock.AI {
             }
         }
 
+        /// <summary>
+        /// Temporarily disables the debt collector for `duration`
+        /// seconds and plays the stun effect animation. Also dims
+        /// its color for more visual feedback.
+        /// </summary>
+        /// <param name="duration">stun duration in seconds</param>
         private IEnumerator stun(float duration) {
             stunned = true;
             Material mat = gameObject.GetComponentInChildren<Renderer>().material;
@@ -546,6 +552,16 @@ namespace FiscalShock.AI {
             stunEffect.SetActive(false);
             mat.SetColor("_Color", Color.white);
             yield return null;
+        }
+
+        /// <summary>
+        /// Interface to the internal stun function. External callers,
+        /// like exploding barrels, might be destroyed before the stun
+        /// duration ends. Destroyed objects never finish their coroutines.
+        /// </summary>
+        /// <param name="duration">stun duration in seconds</param>
+        public void externalStun(float duration) {
+            StartCoroutine(stun(duration));
         }
     }
 }

@@ -139,8 +139,13 @@ public class PlayerShoot : MonoBehaviour {
     /// </summary>
     private void Start() {
         GameObject hud = GameObject.FindGameObjectWithTag("HUD");
-        feed = hud.GetComponentInChildren<FeedbackController>();
-        hud.GetComponentInChildren<HUD>().playerTransform = transform;
+        if (hud != null) {
+            HUD hudScript = hud.GetComponent<HUD>();
+            if (hudScript != null) {
+                hudScript.playerTransform = transform;
+            }
+            feed = hud.GetComponentInChildren<FeedbackController>(true);
+        }
         GameObject tmp = GameObject.FindGameObjectWithTag("Crosshair");
         if (tmp != null) {
             crossHair = tmp.GetComponentInChildren<Image>(true);
@@ -180,6 +185,7 @@ public class PlayerShoot : MonoBehaviour {
         }
         if (state.lastWeapon >= 0 && state.lastWeapon < guns.Count && weapon == guns[state.lastWeapon]) {
             weapon.SetActive(true);
+            crossHair.enabled = currentWeaponStats.showCrosshair;
         }
     }
 

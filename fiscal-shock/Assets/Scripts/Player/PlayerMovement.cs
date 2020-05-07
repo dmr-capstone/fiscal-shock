@@ -70,8 +70,12 @@ public class PlayerMovement : MonoBehaviour
     }
 
     private void Start() {
-        Hivemind hivemind = GameObject.Find("DungeonSummoner").GetComponent<Hivemind>();
-        hivemind.lastPlayerLocation = originalSpawn;
+        // TODO: This should really be in Hivemind's start, but we ended up not using Hivemind
+        GameObject dungeoneer = GameObject.Find("DungeonSummoner");
+        if (dungeoneer != null) {
+            Hivemind hivemind = dungeoneer.GetComponent<Hivemind>();
+            hivemind.lastPlayerLocation = originalSpawn;
+        }
         // Debug.Log(hivemind.lastPlayerLocation.vector);
     }
 

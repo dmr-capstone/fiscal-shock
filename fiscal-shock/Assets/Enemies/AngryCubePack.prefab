@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6349333057524792610}
   - component: {fileID: 802157150920180187}
   - component: {fileID: 6491110676994180667}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: AngryCube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
