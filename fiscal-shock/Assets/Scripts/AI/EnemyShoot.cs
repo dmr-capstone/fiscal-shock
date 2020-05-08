@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using FiscalShock.AI;
 
 /// <summary>
 /// Attack behavior for the enemy AI.
@@ -96,7 +97,7 @@ public class EnemyShoot : MonoBehaviour {
     private void Update() {
         if (player == null || !spottedPlayer) { return; }
 
-        float distance = enemyMovement.getDistanceFromPlayer();
+        float distance = enemyMovement.distanceFromPlayer2D;
 
         if (distance <= attackRange) {
             timeSinceLastAttack += Time.deltaTime;
@@ -115,7 +116,7 @@ public class EnemyShoot : MonoBehaviour {
     private System.Collections.IEnumerator fireBullet(float deviation, float damage) {
         isFiring = true;
         if (!runAndGun) {
-            enemyMovement.enabled = false;
+            enemyMovement.isAttacking = true;
         }
         attackAnimationLength = animationManager.playAttackAnimation();
         yield return new WaitForSeconds(attackAnimationDelay);
@@ -156,7 +157,7 @@ public class EnemyShoot : MonoBehaviour {
         // Finish waiting for the attack animation to end before moving again
         if (!runAndGun) {
             yield return new WaitForSeconds(attackAnimationLength - attackAnimationDelay);
-            enemyMovement.enabled = true;
+            enemyMovement.isAttacking = false;
         }
 
         isFiring = false;

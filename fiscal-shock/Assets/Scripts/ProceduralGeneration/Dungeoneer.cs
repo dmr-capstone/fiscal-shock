@@ -398,10 +398,10 @@ namespace FiscalShock.Procedural {
         }
 
         private GameObject spawnEnemy(List<SpawnableEnemy> spawnables, Cell location) {
-            return spawnFromList(spawnables.Cast<SpawnableObject>().ToList(), location);
+            return spawnFromList(spawnables.Cast<SpawnableObject>().ToList(), location, currentDungeonType.wallHeight * 0.8f);
         }
 
-        private GameObject spawnFromList(List<SpawnableObject> spawnables, Cell location) {
+        private GameObject spawnFromList(List<SpawnableObject> spawnables, Cell location, float heightToSpawn = 0) {
             // Select random index
             int idx;
             float chance;
@@ -415,7 +415,7 @@ namespace FiscalShock.Procedural {
             GameObject thingToSpawn = spawnables[idx].prefab;
 
             // Place it at the correct point
-            Vector3 where = location.site.toVector3AtHeight(thingToSpawn.transform.position.y);
+            Vector3 where = location.site.toVector3AtHeight(heightToSpawn == 0 ? thingToSpawn.transform.position.y : heightToSpawn);
 
             GameObject thing = Instantiate(thingToSpawn, where, thingToSpawn.transform.rotation);
             thing.name = $"{thingToSpawn.name} @ {location.site.id}";

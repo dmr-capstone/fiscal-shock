@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using FiscalShock.Procedural;
-using System;
+using FiscalShock.AI;
 
 /// <summary>
 /// Manages AI health and reactions to being damaged.

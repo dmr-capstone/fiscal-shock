@@ -35,7 +35,7 @@ namespace FiscalShock.AI {
         public bool stunned { get; set; }
 
         /// <summary>
-        /// Distance from the player in 2D space.
+        /// Distance from the player in 2D space (x,z).
         /// </summary>
         public float distanceFromPlayer2D { get; private set; }
 
@@ -45,12 +45,12 @@ namespace FiscalShock.AI {
         private CharacterController controller;
 
         // Pathfinding
-        
+
         /// <summary>
         /// The point at which the player originally spawned.
         /// </summary>
         public Vertex spawnPoint { get; set; }
-        
+
         /// <summary>
         /// The Delaunay vertex of the last trigger zone that the debt collector entered.
         /// </summary>
@@ -530,6 +530,11 @@ namespace FiscalShock.AI {
 
             // Obtain next node or prepare for recalculation if triggered zone site and destination are equal.
             if (lastVisitedNode.Equals(nextDestinationNode)) {
+                // Deal with unknown null path.
+                if (path == null) {
+                    return;
+                }
+
                 if (path.Count > 0) {
                     nextDestinationNode = path.Pop();
 
@@ -559,7 +564,7 @@ namespace FiscalShock.AI {
             }
 
             // Find the safe direction and move there.
-            Vector3 safeDirection = findSafeDirection(nextFlatDir, transform.forward);
+            Vector3 safeDirection = findSafeDirection(nextFlatDir);
             applyMovement(safeDirection);
             recalculationCount++;
         }
@@ -597,11 +602,6 @@ namespace FiscalShock.AI {
                 isJumping = true;
             }
         }
-
-        /*
-            void OnTriggerEnter(Collider col) {
-                if (col.gameObject.tag == "Player") {
-        */
 
         private void OnControllerColliderHit(ControllerColliderHit col) {
             if (stunned) {  // Can stun and touch without game over, to some extent
