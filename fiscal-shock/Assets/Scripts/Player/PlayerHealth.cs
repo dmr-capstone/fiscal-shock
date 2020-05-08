@@ -87,6 +87,18 @@ public class PlayerHealth : MonoBehaviour {
         }
     }
 
+    public void endGameByDebtCollector() {
+        if (!StateManager.playerDead) {
+            hitVignette.SetActive(false);
+            StateManager.playerDead = true;
+            float brokenKneecapPayment = StateManager.cashOnHand * 0.5f;
+            GameObject.FindGameObjectWithTag("HUD").GetComponentInChildren<FeedbackController>().shoot(brokenKneecapPayment);
+            StateManager.cashOnHand -= brokenKneecapPayment;
+            Destroy(GameObject.Find("DungeonMusic"));
+            GameObject.FindGameObjectWithTag("Loading Screen").GetComponent<LoadingScreen>().startLoadingScreen("LoseGame");
+        }
+    }
+
     /// <summary>
     /// Enables invincibility when the player loads in.
     /// </summary>

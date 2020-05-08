@@ -18,7 +18,6 @@ namespace FiscalShock.Graphs {
         /// Polygons representing faces of the Voronoi diagram.
         /// </summary>
         public List<Cell> cells { get; }
-
         public Delaunay dual { get; }
 
         /// <summary>

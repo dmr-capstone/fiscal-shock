@@ -22,6 +22,7 @@ TagManager:
   - Spawn Point
   - Loading Screen
   - Assistant
+  - Debt Collector
   - Player Inventory
   - Player Text
   layers:
@@ -41,8 +42,8 @@ TagManager:
   - EnemyAvoidanceTrigger
   - Explosive
   - Obstacle
-  - 
-  - 
+  - DC Movement
+  - Projectile
   - 
   - 
   - 

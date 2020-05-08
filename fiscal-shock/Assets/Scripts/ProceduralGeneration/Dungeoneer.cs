@@ -4,6 +4,8 @@ using UnityEngine;
 using FiscalShock.Graphs;
 using ThirdParty;
 using UnityEngine.Rendering;
+using FiscalShock.AI;
+using FiscalShock.Pathfinding;
 using FiscalShock.GUI;
 
 /// <summary>
@@ -20,6 +22,11 @@ namespace FiscalShock.Procedural {
         [Tooltip("Available dungeon themes.")]
         public List<DungeonTypeData> dungeonThemes;
 
+        [Tooltip("Script to create triggers around Voronoi cells.")]
+        public GameObject triggerPrefab;
+        [Tooltip("Reference to debt collector prefab to spawn.")]
+        public GameObject debtCollectorPrefab;
+
         [Header("Development/Debug")]
         [Tooltip("List of weapons to start with when you load the game from this scene directly.")]
         public List<GameObject> debugWeapons;
@@ -30,10 +37,14 @@ namespace FiscalShock.Procedural {
         public int timesEntered;
         [Tooltip("Set the state manager value")]
         public int currentFloor;
+        [Tooltip("Enable or disable spawning of enemies. Useful when verifying geometry generation or the debt collector.")]
+        public bool spawnEnemiesDebug = true;
 
         /* Variables set during runtime */
         public DungeonType currentDungeonType { get; set; }
         public MersenneTwister mt { get; private set; }
+        public MovementTrigger cellTrigger { get; private set; }
+
 
         /* Graphs */
         public Delaunay dt { get; private set; }
@@ -42,6 +53,10 @@ namespace FiscalShock.Procedural {
         public List<Edge> spanningTree { get; private set; }
         public List<VoronoiRoom> roomVoronoi { get; private set; }
         public List<Cell> validCells { get; private set; }
+        public Delaunay navigableDelaunay { get; private set; }
+        private List<Cell> reachableCells;
+        public Vector3 topRightWallCorner { get; set; }
+        public Vector3 bottomLeftWallCorner { get; set; }
 
         /* Scene organization */
         public List<GameObject> enemies { get; } = new List<GameObject>();
@@ -50,6 +65,11 @@ namespace FiscalShock.Procedural {
         public GameObject wallOrganizer { get; private set; }
         public GameObject enemyOrganizer { get; private set; }
         public GameObject thingOrganizer { get; private set; }
+        public GameObject cellColliderOrganizer { get; private set; }
+        private GameObject debtCollector;
+
+        /* Because script execution order is a *****. */
+        private Vertex dcSpawnPoint;
 
         public void Start() {
             Settings.loadSettings();
@@ -62,7 +82,7 @@ namespace FiscalShock.Procedural {
             // and pick randomly later
             currentDungeonType = dungeonThemes
                 .Where(d => d.typeEnum == StateManager.selectedDungeon)
-                //.Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
+                // .Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
                 .Select(d => d.gameObject)
                 .First()
                 .GetComponent<DungeonType>();
@@ -190,6 +210,8 @@ namespace FiscalShock.Procedural {
             thingOrganizer.transform.parent = organizer.transform;
             enemyOrganizer = new GameObject();
             enemyOrganizer.name = "Enemies";
+            cellColliderOrganizer = new GameObject();
+            cellColliderOrganizer.name = "Cell Triggers";
 
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             Debug.Log("Starting floor generation");
@@ -201,7 +223,7 @@ namespace FiscalShock.Procedural {
 
             Debug.Log("Starting wall generation");
             sw.Start();
-            Walls.setWalls(this);
+            reachableCells = Walls.setWalls(this);
             sw.Stop();
             Debug.Log($"Generating walls took {sw.ElapsedMilliseconds} ms");
             sw.Reset();
@@ -224,12 +246,22 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Placing portals took {sw.ElapsedMilliseconds} ms");
             sw.Reset();
 
-            Debug.Log("Starting enemy placement");
-            sw.Start();
-            spawnEnemies();
-            sw.Stop();
-            Debug.Log($"Placing enemies took {sw.ElapsedMilliseconds} ms");
-            sw.Reset();
+            if (spawnEnemiesDebug) {
+                Debug.Log("Starting enemy placement");
+                sw.Start();
+                spawnEnemies();
+                sw.Stop();
+                Debug.Log($"Placing enemies took {sw.ElapsedMilliseconds} ms");
+                sw.Reset();
+            }
+
+            navigableDelaunay = new Delaunay(dt, reachableCells);
+
+            Debug.Log("Setting player node collision triggers.");
+            setPlayerCollisions();
+
+            Debug.Log("Spawning the debt collector.");
+            spawnDebtCollector();
         }
 
         /// <summary>
@@ -276,13 +308,7 @@ namespace FiscalShock.Procedural {
         /// </summary>
         private void randomizeCells() {
             Debug.Log("Randomizing and spawning environmental objects");
-            foreach (Cell cell in vd.cells) {
-            //foreach (Cell cell in validCells) {
-                // Don't spawn things on the convex hull for now
-                if (isPointOnOrNearConvexHull(cell.site) || cell.sides.All(e => e.isWall)) {
-                    continue;
-                }
-
+            foreach (Cell cell in reachableCells) {
                 // Roll 1d100 to see if we can spawn something
                 float randSpawn = mt.NextFloat();
                 if (randSpawn > currentDungeonType.globalObjectRate) {
@@ -337,11 +363,11 @@ namespace FiscalShock.Procedural {
             // Accuracy could be improved, but I'm not worrying about it right now
 
             Debug.Log($"Enemy stat modifiers: global {globalModifier}, value {pointValueModifier}, health {healthModifier}, damage {damageModifier}");
-            foreach (Cell cell in vd.cells) {
-                // Don't spawn things on the convex hull for now
-                if (isPointOnOrNearConvexHull(cell.site) || cell.sides.All(e => e.isWall)) {
-                    continue;
-                }
+            foreach (Cell cell in reachableCells) {
+                // TODO: Don't spawn things on the convex hull for now. Unnecessary?
+                // if (isPointOnOrNearConvexHull(cell.site) || cell.sides.All(e => e.isWall)) {
+                //     continue;
+                // }
 
                 float enemySpawn = mt.NextFloat();
                 if (enemySpawn < currentDungeonType.enemyRate) {
@@ -352,6 +378,7 @@ namespace FiscalShock.Procedural {
                     // Position enemy on top of the object already here
                     if (cell.spawnedObject != null) {
                         enemy.transform.position += new Vector3(0, cell.spawnedObject.transform.position.y, 0);
+                        // MAYBE: enemy.GetComponent<EnemyMovement>().spawnSite = cell;
                     }
 
                     // Randomly resize enemy +/- the variation
@@ -426,6 +453,9 @@ namespace FiscalShock.Procedural {
             spawner.transform.position = spawnPoint.toVector3AtHeight(currentDungeonType.wallHeight * 0.8f);
             player = spawner.spawnPlayer();
 
+            PlayerMovement pmScript = player.GetComponent<PlayerMovement>();
+            pmScript.originalSpawn = spawnPoint;
+
             // Attach any other stuff to player here
             Cheats cheater = GameObject.FindObjectOfType<Cheats>();
             cheater.playerMovement = player.GetComponentInChildren<PlayerMovement>();
@@ -456,6 +486,54 @@ namespace FiscalShock.Procedural {
 
             // Enable temporary player invincibility on spawn
             StartCoroutine(player.GetComponentInChildren<PlayerHealth>().enableIframes(5f));
+
+            Debug.Log(pmScript.originalSpawn.vector);
+
+            // Set the Debt Collector spawn point because ******* script execution order.
+            debtCollector.GetComponentInChildren<DebtCollectorMovement>().spawnPoint = dcSpawnPoint;
+        }
+
+        private void setPlayerCollisions() {
+            foreach (Vertex vertex in navigableDelaunay.vertices) {
+                if (vertex.cell.isClosed) {
+                    Polygon bbox = vertex.cell.getBoundingBox();
+                    float width = bbox.maxX - bbox.minX;
+                    float height = bbox.maxY - bbox.minY;
+                    float aspectRatio = width/height;
+
+                    if (aspectRatio < 5 && aspectRatio > 0.2) {
+                        Vector3 bboxCenter = new Vector3(
+                            bbox.maxX - width / 2, 1, bbox.maxY - height / 2
+                        );
+
+                        GameObject triggerContainer = Instantiate(triggerPrefab, bboxCenter, triggerPrefab.transform.rotation);
+                        triggerContainer.transform.localScale = new Vector3(bbox.maxX - bbox.minX, 1, bbox.maxY-bbox.minY);
+                        triggerContainer.name = $"Trigger for Cell {vertex.cell.id}";
+                        triggerContainer.transform.parent = cellColliderOrganizer.transform;
+
+                        cellTrigger = triggerContainer.GetComponent<MovementTrigger>();
+                        cellTrigger.cellSite = vertex;
+                    }
+                }
+            }
+        }
+
+        private void spawnDebtCollector() {
+            List<Vertex> spawnPoints = navigableDelaunay.vertices;
+
+            Vertex spawnPoint;
+            do {
+                spawnPoint = spawnPoints[mt.Next(spawnPoints.Count - 1)];
+            } while (spawnPoint.cell.hasPortal);
+
+            debtCollector = GameObject.FindGameObjectWithTag("Debt Collector");
+
+            if (debtCollector == null) {
+                debtCollector = Instantiate(debtCollectorPrefab, spawnPoint.toVector3AtHeight(currentDungeonType.wallHeight * 0.8f),
+                    debtCollectorPrefab.transform.rotation);
+            }
+
+            dcSpawnPoint = spawnPoint;
         }
 
         private bool isPointOnOrNearConvexHull(Vertex point) {

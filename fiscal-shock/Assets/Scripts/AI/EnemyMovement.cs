@@ -45,6 +45,7 @@ public class EnemyMovement : MonoBehaviour {
         if (player == null) {
             player = GameObject.FindGameObjectWithTag("Player");
         }
+
         prevPlayerFlatPos = new Vector2(player.transform.position.x, player.transform.position.z);
     }
 

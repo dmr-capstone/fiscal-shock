@@ -14,6 +14,10 @@ namespace FiscalShock.Graphs {
         public float length { get; }
         public bool isWall { get; set; }
 
+        // PATHFINDING ONLY
+        public bool isWalkable { get; set; } = false;
+        internal bool toIgnore { get; set; } = false;
+
         public Edge(Vertex a, Vertex b) {
             vertices = new List<Vertex> { a, b };
             length = getLength();

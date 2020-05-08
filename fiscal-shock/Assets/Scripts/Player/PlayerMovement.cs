@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
+using FiscalShock.Graphs;
+using FiscalShock.Pathfinding;
 
 /// <summary>
 /// Translates user input into player movement (jumping and running).
@@ -43,6 +46,8 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask obstacleMask;
     public LayerMask decorationMask;
 
+    internal Vertex originalSpawn { get; set; }
+
     /// <summary>
     /// 2D movement based on input events
     /// </summary>
@@ -62,6 +67,16 @@ public class PlayerMovement : MonoBehaviour
     /// <returns></returns>
     private void Awake() {
         gameObject.GetComponent<PlayerInput>().actions = inputActions;
+    }
+
+    private void Start() {
+        // TODO: This should really be in Hivemind's start, but we ended up not using Hivemind
+        GameObject dungeoneer = GameObject.Find("DungeonSummoner");
+        if (dungeoneer != null) {
+            Hivemind hivemind = dungeoneer.GetComponent<Hivemind>();
+            hivemind.lastPlayerLocation = originalSpawn;
+        }
+        // Debug.Log(hivemind.lastPlayerLocation.vector);
     }
 
     /// <summary>

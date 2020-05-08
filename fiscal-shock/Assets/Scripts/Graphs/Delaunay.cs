@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ThirdParty.Delaunator;
 using System.Linq;
+using UnityEngine;
 
 namespace FiscalShock.Graphs {
     /// <summary>
@@ -36,6 +37,25 @@ namespace FiscalShock.Graphs {
                             .Select(x => x.cell)
                             .FirstOrDefault();
             }
+        }
+
+        /// <summary>
+        /// Generate filtered Delaunay by using cell list to cut off unneeded edges.
+        /// </summary>
+        /// <param name="del">Input triangulation used as base.</param>
+        /// <param name="reachableCells">List of reachable cells used to filter graph.</param>
+        public Delaunay(Delaunay del, List<Cell> reachableCells) {
+            // Filter out vertices (cells) that aren't reachable. Mark them as ignored for pathfinding.
+            vertices = del.vertices.Where(v => {
+                v.toIgnore = !reachableCells.Contains(v.cell);
+                return !v.toIgnore;
+            }).ToList();
+
+            // Filter out edges that lead to unreachable cells. Mark them as ignored for pathfinding.
+            edges = del.edges.Where(e => {
+                e.toIgnore = !vertices.Contains(e.p) || !vertices.Contains(e.q);
+                return !e.toIgnore;
+            }).ToList();
         }
 
         /// <summary>
