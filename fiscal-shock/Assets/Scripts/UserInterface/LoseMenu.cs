@@ -19,6 +19,7 @@ public class LoseMenu : MonoBehaviour {
     public void RetryClick() {
         GameObject.FindGameObjectWithTag("Spawn Point").GetComponent<SpawnPoint>().resetToHubDefaults();
         StateManager.playerDead = false;
+        StateManager.startNewDay();
         loadScript.startLoadingScreen("Hub");
     }
 

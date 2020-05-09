@@ -422,7 +422,7 @@ namespace FiscalShock.AI {
 
             // DC has been in the same cell for too long
             // But we don't want to teleport when we're really close to the player
-            if (saveCounter >= teleportationSaveRate && distanceFromPlayer2D > 32f) {
+            if (saveCounter >= teleportationSaveRate && distanceFromPlayer2D > minDistanceFromPlayerToTeleport) {
                 // Easy to determine teleportation destination when the path is filled.
                 if (path != null && path.Count > 0) {
                     if (nextDestinationNode == null) {
