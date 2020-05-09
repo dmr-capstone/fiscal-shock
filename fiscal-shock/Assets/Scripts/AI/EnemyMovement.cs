@@ -159,14 +159,6 @@ namespace FiscalShock.AI {
             //Debug.DrawRay(transform.position, -Vector3.up * footSize, Color.yellow, 1);
             #endif
 
-            // TODO use wall heights instead
-            // In some levels (dungeon) and given some sizes of enemies, they can get stuck on the ceiling
-            if (transform.position.y > 8f) {
-                controller.enabled = false;
-                transform.position = new Vector3(transform.position.x, 3f, transform.position.z);
-                controller.enabled= true;
-            }
-
             if (transform.position.y > footSize && Physics.Raycast(controller.center, -Vector3.up, out RaycastHit hit, footSize, (1 << LayerMask.NameToLayer("Ground") | jumpable))) {
                 verticalSpeed = 0;
                 isGrounded = true;

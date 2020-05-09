@@ -175,7 +175,7 @@ public class EnemyHealth : MonoBehaviour {
         // Process enemy defeat
         if (currentHealth <= 0 && !dead) {
             // Temporary boost to earnings for usability testing as we don't have time to fully adjust enemy stats and it's sometimes very hard to earn cash
-            float temporaryBonusMod = Gaussian.next(1.6f, 0.5f);
+            float temporaryBonusMod = Gaussian.next(1.1f, 0.5f);
             // Get up to half the original health as payback, adjusted due to fish cannon scoring too much cash because it OHKOs right now
             float profit = (pointValue + Mathf.Clamp(prevHealth, 1, startingHealth * paybackMultiplier)) * temporaryBonusMod;
             StateManager.cashOnHand += profit;

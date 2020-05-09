@@ -450,7 +450,7 @@ namespace FiscalShock.Procedural {
                 spawnPoint = masterDt.vertices[mt.Next(masterDt.vertices.Count-1)];
             } while (spawnPoint.cell.hasPortal);
             SpawnPoint spawner = GameObject.FindGameObjectWithTag("Spawn Point").GetComponent<SpawnPoint>();
-            spawner.transform.position = spawnPoint.toVector3AtHeight(currentDungeonType.wallHeight * 0.7f);
+            spawner.transform.position = spawnPoint.toVector3AtHeight(currentDungeonType.wallHeight * 0.8f);
             player = spawner.spawnPlayer();
 
             // Set the player's original spawn point.
