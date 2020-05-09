@@ -5,16 +5,37 @@ using UnityEngine;
 
 namespace FiscalShock.Graphs {
     /// <summary>
-    /// Interface and extension of the Delaunator library
+    /// Data structure representing a Delaunay triangulation.
+    /// Interface and extension of the Delaunator library. Turns the Delaunator
+    /// results into less-performant but easier to use data structures.
     /// </summary>
     public class Delaunay : Graph {
+        /// <summary>
+        /// Reference to the raw Delaunator data.
+        /// </summary>
         public Triangulation delaunator { get; private set; }
+
+        /// <summary>
+        /// List of triangles in this triangulation.
+        /// </summary>
         public List<Triangle> triangles { get;} = new List<Triangle>();
 
+        /// <summary>
+        /// This graph's dual, a Voronoi diagram.
+        /// </summary>
         public Voronoi dual { get; set; }
+
+        /// <summary>
+        /// The convex hull of this graph.
+        /// <para>WARNING: Convex hull function implementation is likely incorrect.</para>
+        /// </summary>
         public List<Vertex> convexHull { get; private set; } = new List<Vertex>();
         public List<Edge> convexHullEdges { get; private set; } = new List<Edge>();
 
+        /// <summary>
+        /// Construct a triangulation from a flattened list of doubles.
+        /// </summary>
+        /// <param name="input">List of n doubles in the format (x1, y1, x2, y2, ..., xn, yn)</param>
         public Delaunay(List<double> input) {
             fromDoubleList(input);
         }
@@ -40,7 +61,8 @@ namespace FiscalShock.Graphs {
         }
 
         /// <summary>
-        /// Generate filtered Delaunay by using cell list to cut off unneeded edges.
+        /// Generate filtered Delaunay by using cell list to cut off unneeded
+        /// edges.
         /// </summary>
         /// <param name="del">Input triangulation used as base.</param>
         /// <param name="reachableCells">List of reachable cells used to filter graph.</param>
@@ -61,7 +83,7 @@ namespace FiscalShock.Graphs {
         /// <summary>
         /// Inner method to do Delaunay from vertices
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">List of n doubles in the format (x1, y1, x2, y2, ..., xn, yn)</param>
         private void fromDoubleList(List<double> input) {
             delaunator = new Triangulation(input);
 
@@ -135,13 +157,15 @@ namespace FiscalShock.Graphs {
         }
 
         /// <summary>
-        /// Helper function to create Delaunay data structures
+        /// Helper function to create Delaunay data structures.
+        /// Don't think too hard about this one and check their guide...
+        /// <para>https://mapbox.github.io/delaunator/</para>
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <param name="triangleNum"></param>
-        /// <param name="edges"></param>
-        /// <param name="triangleEdges"></param>
+        /// <param name="a">index of edge a</param>
+        /// <param name="b">index of edge b</param>
+        /// <param name="triangleNum">which triangle this is</param>
+        /// <param name="edges">list of edge indices</param>
+        /// <param name="triangleEdges">list of triangle's edge indices</param>
         public static void addToEdgeList(int a, int b, int triangleNum, List<List<int>> edges, List<List<List<int>>> triangleEdges) {
             if (a < b) {
                 while (triangleEdges[a].Count <= b) {

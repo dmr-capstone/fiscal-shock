@@ -66,10 +66,16 @@ public class EnemyHealth : MonoBehaviour {
     private FeedbackController feed;
 
     /// <summary>
-    /// Reference to this bot's rigidbody, used for explosives
+    /// Reference to this bot's controller, used for explosives
     /// </summary>
-    public CharacterController ragdoll;
+    public CharacterController ragdoll { get; set; }
+
+    [Tooltip("Mass, used as part of calculating simulated physics from explosion forces.")]
     public float mass = 3.0f;
+
+    /// <summary>
+    /// Track the current impact that blew away this bot.
+    /// </summary>
     private Vector3 impact;
 
     /// <summary>
@@ -145,12 +151,13 @@ public class EnemyHealth : MonoBehaviour {
         es.enabled = false;
         em.stunned = true;
 
+        // Apply a primitive physics force to simulate being knocked back by the stun
+        // This would be changed from `while` to `if` and moved to the FixedUpdate function if knockbacks should occur while not stunned.
         while (impact.magnitude > 0.2f) {
             ragdoll.Move(impact * Time.deltaTime);
             impact = Vector3.Lerp(impact, Vector3.zero, duration * Time.deltaTime);
             yield return null;
         }
-        //yield return new WaitForSeconds(duration);
 
         em.enabled = true;
         em.stunned = false;
@@ -175,7 +182,7 @@ public class EnemyHealth : MonoBehaviour {
         // Process enemy defeat
         if (currentHealth <= 0 && !dead) {
             // Temporary boost to earnings for usability testing as we don't have time to fully adjust enemy stats and it's sometimes very hard to earn cash
-            float temporaryBonusMod = Gaussian.next(1.1f, 0.5f);
+            float temporaryBonusMod = Gaussian.next(1.2f, 0.5f);
             // Get up to half the original health as payback, adjusted due to fish cannon scoring too much cash because it OHKOs right now
             float profit = (pointValue + Mathf.Clamp(prevHealth, 1, startingHealth * paybackMultiplier)) * temporaryBonusMod;
             StateManager.cashOnHand += profit;
@@ -244,6 +251,12 @@ public class EnemyHealth : MonoBehaviour {
         StartCoroutine(explode.GetComponent<Explosion>().timeout());
     }
 
+    /// <summary>
+    /// Creates a knockback impact force on this bot. Currently,
+    /// the impact force's effect is only simulated while stunned.
+    /// </summary>
+    /// <param name="direction">direction to be blown away to</param>
+    /// <param name="force">amount of force applied</param>
     public void addImpact(Vector3 direction, float force) {
         direction.Normalize();
         if (direction.y < 0) {

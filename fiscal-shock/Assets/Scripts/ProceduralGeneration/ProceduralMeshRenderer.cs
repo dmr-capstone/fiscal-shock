@@ -8,6 +8,13 @@ using FiscalShock.Procedural;
 /// This script must be attached to a camera to work!
 /// </summary>
 namespace FiscalShock.Demo {
+    /// <summary>
+    /// Visualizes the graphs used to generate the dungeon and handle
+    /// A* pathfinding. Currently, you can toggle this on with F4 (see
+    /// Cheats.cs), but you can only change what graphs to view while
+    /// in the Editor, not builds.
+    /// <para>Make sure you have Gizmos enabled in Scene view to view the graphs there.</para>
+    /// </summary>
     public class ProceduralMeshRenderer : MonoBehaviour {
         public Dungeoneer dungen { get; set; }
 
@@ -224,19 +231,27 @@ namespace FiscalShock.Demo {
             }
         }
 
+        /// <summary>
+        /// This is why the SingleColor mat keeps getting "updated"
+        /// </summary>
+        /// <param name="color"></param>
         private void setGraphColors(Color color) {
             edgeMat.SetPass(0);
             edgeMat.SetColor(Shader.PropertyToID("_Color"), color);  // set game view color
             GL.Color(color);  // set editor color
         }
 
-        // Display in game
-        public void OnPostRender() {
+        /// <summary>
+        /// Display in game view
+        /// </summary>
+        private void OnPostRender() {
             renderAllSelected();
         }
 
-        // Display in editor
-        public void OnDrawGizmos() {
+        /// <summary>
+        /// Display in Editor
+        /// </summary>
+        private void OnDrawGizmos() {
             renderAllSelected();
         }
     }

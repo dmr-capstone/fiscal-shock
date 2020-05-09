@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace FiscalShock.Graphs {
     /// <summary>
-    /// 2D polygon, defined by its edges (and thereby, vertices)
+    /// 2D polygon.
     /// </summary>
     public class Polygon {
         public List<Edge> sides { get; private set; } = new List<Edge>();
@@ -16,11 +16,14 @@ namespace FiscalShock.Graphs {
         public float minY => vertices.Min(v => v.y);
         public float maxY => vertices.Max(v => v.y);
 
+        /// <summary>
+        /// Empty constructor.
+        /// </summary>
         public Polygon() {}
 
         /// <summary>
         /// WARNING: Do not use vertex-constructed polygons if you need edges!
-        /// Only useful for operations like finding bounding points of points.
+        /// Only useful for operations like finding bounding boxes of points.
         /// Without edges, it is impossible to know the correct area, as the
         /// polygon could be self-intersecting.
         /// </summary>
@@ -29,15 +32,28 @@ namespace FiscalShock.Graphs {
             vertices = vs;
         }
 
+        /// <summary>
+        /// Create a polygon from a list of edges and the vertices that are
+        /// endpoints of those edges.
+        /// </summary>
+        /// <param name="boundary">edges defining this polygon</param>
         public Polygon(List<Edge> boundary) {
             setSides(boundary);
         }
 
+        /// <summary>
+        /// Sets the sides of the polygon and calls the function to set the
+        /// vertices.
+        /// </summary>
+        /// <param name="boundary">edges defining this polygon</param>
         public void setSides(List<Edge> boundary) {
             sides = boundary;
             setVerticesFromSides();
         }
 
+        /// <summary>
+        /// Assigns the vertices of this polygon, based on the edges.
+        /// </summary>
         public void setVerticesFromSides() {
             vertices = sides.SelectMany(e => e.vertices).Distinct().ToList();
         }
@@ -101,9 +117,10 @@ namespace FiscalShock.Graphs {
         }
 
         /// <summary>
-        /// Gets the bounding box coordinates of this polygon from the minimum and maximum vertex coordinates
+        /// Gets the bounding box coordinates of this polygon from the minimum
+        /// and maximum vertex coordinates
         /// </summary>
-        /// <returns>The polygon representing the bounding pox of this polygon.</returns>
+        /// <returns>The polygon representing the bounding box of this polygon.</returns>
         public Polygon getBoundingBox() {
             if (vertices.Count < 3) {
                 return null;
@@ -132,16 +149,34 @@ namespace FiscalShock.Graphs {
     /// A three-sided polygon. What did you expect?
     /// </summary>
     public class Triangle : Polygon {
+        /// <summary>
+        /// Delaunator ID.
+        /// </summary>
         public int id { get; }
+
+        /// <summary>
+        /// Center of the circle circumscribing this triangle.
+        /// </summary>
         public Vertex circumcenter { get; private set; }
         public Vertex a => vertices[0];
         public Vertex b => vertices[1];
         public Vertex c => vertices[2];
 
+        /// <summary>
+        /// Constructor based on vertices. Vertices should be given in
+        /// counter-clockwise order.
+        /// </summary>
+        /// <param name="corners">vertices of this triangle in CCW order</param>
         public Triangle(List<Vertex> corners) {
             vertices = corners;
         }
 
+        /// <summary>
+        /// Constructor based on vertices and an ID for Delaunator data.
+        /// </summary>
+        /// <param name="corners">vertices of this triangle in CCW order</param>
+        /// <param name="tid">Delauantor ID</param>
+        /// <returns></returns>
         public Triangle(List<Vertex> corners, int tid) : this(corners) {
             id = tid;
         }
@@ -201,7 +236,7 @@ namespace FiscalShock.Graphs {
     }
 
     /// <summary>
-    /// Voronoi cell extension of base Polygon class
+    /// Voronoi cell extension of base Polygon class.
     /// </summary>
     public class Cell : Polygon {
         public Vertex site { get; set; }
@@ -219,6 +254,10 @@ namespace FiscalShock.Graphs {
         /// </summary>
         public bool reachable = true;
 
+        /// <summary>
+        /// Constructor based on a vertex on a Delaunay triangulation.
+        /// </summary>
+        /// <param name="delaunayVertex">vertex on a DT</param>
         public Cell(Vertex delaunayVertex) {
             site = delaunayVertex;
             id = site.id;
@@ -233,7 +272,12 @@ namespace FiscalShock.Graphs {
         }
 
         /* Comparator functions - needed for LINQ */
-        // Only based on site for now, should really take into account sides
+        /// <summary>
+        /// Checks if cells are the same if they surround the same site.
+        /// Could be improved by checking they have the same edges.
+        /// </summary>
+        /// <param name="obj">object to compare to</param>
+        /// <returns>equality</returns>
         public override bool Equals(object obj) {
             if (obj is Cell other) {
                 return site == other.site;

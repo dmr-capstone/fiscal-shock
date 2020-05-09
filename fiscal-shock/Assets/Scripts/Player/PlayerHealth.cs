@@ -88,7 +88,8 @@ public class PlayerHealth : MonoBehaviour {
     }
 
     public void endGameByDebtCollector() {
-        if (!StateManager.playerDead) {
+        if (!StateManager.playerDead && !invincible) {
+            Debug.Log($"Player was caught by debt collector on floor {StateManager.currentFloor} with {StateManager.totalDebt} debt");
             hitVignette.SetActive(false);
             StateManager.playerDead = true;
             float brokenKneecapPayment = StateManager.cashOnHand * 0.5f;

@@ -8,10 +8,10 @@ using FiscalShock.AI;
 using FiscalShock.Pathfinding;
 using FiscalShock.GUI;
 
-/// <summary>
-/// Generates a dungeon floor
-/// </summary>
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Generates a dungeon floor based on the selected DungeonType parameters.
+    /// </summary>
     public class Dungeoneer : MonoBehaviour {
         [Tooltip("Reference to player prefab so it can be spawned somewhere in the level.")]
         public GameObject playerPrefab;
@@ -45,7 +45,6 @@ namespace FiscalShock.Procedural {
         public MersenneTwister mt { get; private set; }
         public MovementTrigger cellTrigger { get; private set; }
 
-
         /* Graphs */
         public Delaunay dt { get; private set; }
         public Voronoi vd { get; private set; }
@@ -71,6 +70,9 @@ namespace FiscalShock.Procedural {
         /* Because script execution order is a *****. */
         private Vertex dcSpawnPoint;
 
+        /// <summary>
+        /// Initialization and execution of procedural algorithm.
+        /// </summary>
         public void Start() {
             Settings.loadSettings();
             Debug.Log($"Starting to load");
@@ -105,6 +107,9 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Finished spawning stuff in {sw.ElapsedMilliseconds} ms");
         }
 
+        /// <summary>
+        /// Initialize the pseudorandom number generators that will be used.
+        /// </summary>
         public void initPRNG() {
             // Set up the PRNG
             if (seed == 0) {
@@ -115,6 +120,12 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Using seed {seed}");
         }
 
+        /// <summary>
+        /// Create a new, random Delaunay triangulation. The points on the
+        /// Delaunay are found using a Poisson disc sampling algorithm.
+        /// The Delaunay is used by the A* search of the Debt Collector, and
+        /// also to create the Voronoi.
+        /// </summary>
         public void generateDelaunay() {
             Debug.Log("Generating Delaunay");
             Poisson dist = new Poisson(currentDungeonType.minimumPoissonDistance, currentDungeonType.width, currentDungeonType.height);
@@ -122,12 +133,27 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Generated Delaunay with {dt.vertices.Count} vertices.");
         }
 
+        /// <summary>
+        /// Generates the dual of the Delaunay triangulation, a Voronoi diagram.
+        /// The Voronoi is used for the placement of environmental objects.
+        /// </summary>
         public void generateVoronoi() {
             Debug.Log("Generating Voronoi");
             vd = dt.makeVoronoi();
             Debug.Log($"Generated Voronoi with {vd.vertices.Count} vertices.");
         }
 
+        /// <summary>
+        /// Determine the Mystery Dungeon-esque "rooms" and size them up as
+        /// configured by the DungeonType. Works by picking a set of points
+        /// on the Delaunay triangulation at random that are a given distance
+        /// away from each other, known as the "master Delaunay points." Then,
+        /// the Delaunay triangulation of those points is found. From this
+        /// secondary DT, a supergraph of a spanning tree is used to determine
+        /// where corridors should exist. Additionally, rooms are created, which
+        /// consist of a "seed point" (the master DT point) and a number of
+        /// surrounding Voronoi cells.
+        /// </summary>
         public void generateRoomGraphs() {
             Debug.Log("Generating room graphs");
             // pick how many rooms to make
@@ -199,6 +225,9 @@ namespace FiscalShock.Procedural {
             validCells = getValidCells();
         }
 
+        /// <summary>
+        /// Do all the stuff to make a dungeon
+        /// </summary>
         private void setDungeon() {
             organizer = new GameObject();
             organizer.name = "Dungeon Parts";
@@ -246,7 +275,7 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Placing portals took {sw.ElapsedMilliseconds} ms");
             sw.Reset();
 
-            if (spawnEnemiesDebug) {
+            if (spawnEnemiesDebug || !StateManager.startedFromDungeon) {
                 Debug.Log("Starting enemy placement");
                 sw.Start();
                 spawnEnemies();
@@ -446,9 +475,10 @@ namespace FiscalShock.Procedural {
             Debug.Log("Spawning player");
 
             Vertex spawnPoint;
-            do {  // Don't spawn the player on portals. Warning: infinite loop if there are only 1-2 cells
+            do {  // Don't spawn the player on portals. Warning: infinite loop if there are only 1-2 cells!
                 spawnPoint = masterDt.vertices[mt.Next(masterDt.vertices.Count-1)];
             } while (spawnPoint.cell.hasPortal);
+            // Please use the spawn point instead of teleporting the player manually
             SpawnPoint spawner = GameObject.FindGameObjectWithTag("Spawn Point").GetComponent<SpawnPoint>();
             spawner.transform.position = spawnPoint.toVector3AtHeight(currentDungeonType.wallHeight * 0.8f);
             player = spawner.spawnPlayer();
@@ -547,6 +577,11 @@ namespace FiscalShock.Procedural {
             dcSpawnPoint = spawnPoint;
         }
 
+        /// <summary>
+        /// Helper function to check if a point is on or near the convex hull
+        /// of the DT. WARNING: Convex hull algorithm doesn't work right.
+        /// </summary>
+        /// <param name="point">point to check</param>
         private bool isPointOnOrNearConvexHull(Vertex point) {
             return
                 dt.convexHull.Contains(point) || point.neighborhood.Intersect(dt.convexHull).ToList().Count > 0

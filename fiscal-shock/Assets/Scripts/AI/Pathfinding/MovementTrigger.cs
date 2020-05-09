@@ -7,7 +7,6 @@ namespace FiscalShock.Pathfinding {
     /// Class describing a trigger zone associated with a cell.
     /// </summary>
     public class MovementTrigger : MonoBehaviour {
-
         /// <summary>
         /// The cell vertex with which this trigger is associated.
         /// </summary>
@@ -23,11 +22,18 @@ namespace FiscalShock.Pathfinding {
         /// </summary>
         private DebtCollectorMovement dcMovement;
 
-        void Start() {
+        /// <summary>
+        /// Hard cap on how many cells to remember visiting lately.
+        /// Helps prevent getting stuck doing figure-eights across
+        /// two different cells because you can't walk through walls.
+        /// </summary>
+        private readonly int maxCellsVisited = 3;
+
+        private void Start() {
             hivemind = GameObject.Find("DungeonSummoner").GetComponent<Hivemind>();
         }
 
-        void OnTriggerEnter(Collider col) {
+        private void OnTriggerEnter(Collider col) {
             if (col.gameObject.layer == 11) {
                 // Debug.Log($"Player stepped into {gameObject.name}");
                 hivemind.lastPlayerLocation = cellSite;
@@ -40,11 +46,13 @@ namespace FiscalShock.Pathfinding {
 
                 // Debug.Log($"Debt Collector stepped into {gameObject.name}");
                 dcMovement.lastVisitedNode = cellSite;
+                // If the debt collector already visited this site, he's possibly stuck.
                 if (dcMovement.recentlyVisitedNodes.Contains(cellSite)) {
                     dcMovement.saveCounter++;
                     return;
                 }
-                if (dcMovement.recentlyVisitedNodes.Count >= 3) {
+                // Otherwise, add it to the list of recently visited nodes.
+                if (dcMovement.recentlyVisitedNodes.Count >= maxCellsVisited) {
                     dcMovement.recentlyVisitedNodes.RemoveAt(0);
                 }
                 dcMovement.recentlyVisitedNodes.Add(cellSite);

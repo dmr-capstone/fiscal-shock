@@ -2,6 +2,10 @@ using UnityEngine;
 using System.Collections;
 
 namespace FiscalShock.AI {
+    /// <summary>
+    /// Basic pursuit of player and localized obstacle avoidance
+    /// pathfinding used by defeatable enemies.
+    /// </summary>
     public class EnemyMovement : MonoBehaviour {
         [Tooltip("The speed at which the object moes.")]
         public float movementSpeed = 3f;
@@ -19,7 +23,7 @@ namespace FiscalShock.AI {
         public float visionRadius = 35f;
 
         // PLAYER TRACKING
-        public GameObject player;
+        public GameObject player { get; set; }
         private EnemyShoot shootScript;
 
         /// <summary>
@@ -72,8 +76,13 @@ namespace FiscalShock.AI {
         /// </summary>
         public Vector3 destination;
 
+        [Tooltip("Amount of gravity this bot suffers.")]
         public float gravity = 40f;
 
+        /// <summary>
+        /// The sweet spot for where to hang out when close enough to the player
+        /// to start orbiting.
+        /// </summary>
         private float safeRadiusAvg;
 
         // RAYCASTING
@@ -125,11 +134,21 @@ namespace FiscalShock.AI {
         /// </summary>
         public bool isAttacking = false;
 
+        /// <summary>
+        /// Current vertical speed.
+        /// </summary>
         private float verticalSpeed = 0f;
 
+        /// <summary>
+        /// Distance from the center of the CharacterCollider to the bottom of
+        /// it. This distance is used to check whether the bot is standing
+        /// on solid ground.
+        /// </summary>
         private float footSize;
 
-
+        /// <summary>
+        /// Initialize references and variables.
+        /// </summary>
         private void Start() {
             if (player == null) {
                 player = GameObject.FindGameObjectWithTag("Player");
@@ -154,18 +173,22 @@ namespace FiscalShock.AI {
             prevPlayerFlatPos = new Vector3(player.transform.position.x, 0, player.transform.position.z);
         }
 
+        /// <summary>
+        /// Update pathfinding with each tick.
+        /// </summary>
         private void FixedUpdate() {
             #if UNITY_EDITOR
             //Debug.DrawRay(transform.position, -Vector3.up * footSize, Color.yellow, 1);
             #endif
 
+            // Check if we're on the ground
             if (transform.position.y > footSize && Physics.Raycast(controller.center, -Vector3.up, out RaycastHit hit, footSize, (1 << LayerMask.NameToLayer("Ground") | jumpable))) {
                 verticalSpeed = 0;
                 isGrounded = true;
             } else {
                 isGrounded = false;
             }
-            // Apply gravity after spawning.
+            // Apply gravity if necessary
             if (!isGrounded) {
                 verticalSpeed -= gravity * Time.deltaTime;
             } else {
@@ -211,19 +234,23 @@ namespace FiscalShock.AI {
             // Calculate the distance from the player.
             distanceFromPlayer2D = Vector3.Distance(playerFlatPosition, flatPosition);
 
+            // I can see you...
             if (distanceFromPlayer2D < visionRadius) {
+                // Just head straight towards them.
                 if (distanceFromPlayer2D > safeRadiusMax) {
                     Vector3 safeDir = findSafeDirection(flatPlayerDirection);
                     applyMovement(safeDir, playerDirection);
                     return;
                 }
 
+                // Backpedal
                 if (distanceFromPlayer2D < safeRadiusMin) {
                     Vector3 safeDir = findSafeDirection(-flatPlayerDirection);
                     applyMovement(safeDir, playerDirection);
                     return;
                 }
 
+                // Time to orbit!
                 if (distanceFromPlayer2D <= safeRadiusMax && distanceFromPlayer2D >= safeRadiusMin) {
                     if (!recalculateDestination && Vector3.Distance(playerFlatPosition, prevPlayerFlatPos) < destinationRefreshDistance) {
                         // The point at which the mook would appear if followed the straight line to the destination.
@@ -232,7 +259,7 @@ namespace FiscalShock.AI {
                         // Offset from linear position in opposite direction from player, as determined by the average safe radius.
                         float distanceDiff = safeRadiusAvg - Vector3.Distance(playerFlatPosition, linearDirection);
 
-                        // Get next position in orbit around player. Should still be 0 on y at this point.
+                        // Get next position in orbit around player.
                         Vector3 targetPosition = (getOrbitalCoordinate(linearDirection, playerFlatPosition, distanceDiff)).normalized;
                         targetPosition.y = verticalSpeed;
                         //Debug.Log($"{gameObject.name} TARGET POSITION: {targetPosition} from {flatPosition}");
@@ -241,6 +268,7 @@ namespace FiscalShock.AI {
                             recalculateDestination = true;
                         }
 
+                        // Now that we know where we want to go, we need to see if we're gonna walk into anything
                         Vector3 desiredDirection = findSafeDirection((targetPosition - transform.position).normalized);
 
                         applyMovement(desiredDirection, playerDirection);
@@ -269,6 +297,11 @@ namespace FiscalShock.AI {
             transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * rotationSpeed);
         }
 
+        /// <summary>
+        /// Apply previously calculated direction vectors.
+        /// </summary>
+        /// <param name="direction">direction to move in. y-value is discarded and replaced with vertical speed.</param>
+        /// <param name="rotationDirection">direction to face</param>
         private void applyMovement(Vector3 direction, Vector3 rotationDirection) {
             Quaternion rotation = Quaternion.LookRotation(rotationDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * rotationSpeed);
