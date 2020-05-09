@@ -8,6 +8,10 @@ using System.IO;
 using System.Collections;
 
 namespace FiscalShock.AI {
+    /// <summary>
+    /// A* search and localized pathfinding that includes wall avoidance and
+    /// the ability to climb vertical faces of objects for the Debt Collector.
+    /// </summary>
     public class DebtCollectorMovement : MonoBehaviour {
         [Tooltip("The speed at which the object moves.")]
         public float movementSpeed = 3f;
@@ -121,18 +125,30 @@ namespace FiscalShock.AI {
         private int teleportationSaveRate =  300;
 
         /// <summary>
-        /// The amount of time that has passed since the debt collector entered a new
-        /// trigger zone.
+        /// The amount of time that has passed since the debt collector entered
+        /// a new trigger zone.
         /// </summary>
         internal int saveCounter = 0;
 
+        /// <summary>
+        /// The last few nodes the DC has visited. Used to prevent getting stuck
+        /// running around the same few cells.
+        /// </summary>
         public List<Vertex> recentlyVisitedNodes = new List<Vertex>();
 
         /// <summary>
-        /// How high up the debt collector should be teleported. Needed because teleporting
-        /// on top of obstacles.
+        /// How high up the debt collector should be teleported. Needed because
+        /// teleporting on top of obstacles.
         /// </summary>
         private float teleportationHeight;
+
+        /// <summary>
+        /// The closest the DC can be to the player and still teleport
+        /// to correct "stuck" pathfinding. The player might be kiting or
+        /// otherwise keeping the DC "stuck" in the same few cells, but
+        /// that doesn't mean we should teleport.
+        /// </summary>
+        private float minDistanceFromPlayerToTeleport = 32f;
 
         /// <summary>
         /// Layers the debt collector can climb/jump over.
@@ -158,6 +174,7 @@ namespace FiscalShock.AI {
         /// </summary>
         private float stunThreshold;
 
+        [Tooltip("The stun effect game object attached to this prefab.")]
         public GameObject stunEffect;
 
         /// <summary>
@@ -184,7 +201,7 @@ namespace FiscalShock.AI {
         /// will correct itself if it spawned on solid ground during
         /// the next update anyway.
         /// </summary>
-        private bool isJumping = true;
+        private bool airborne = true;
 
         [Tooltip("Maximum jump height. A shorter jump height results in the debt collector appearing to 'climb' objects. A jump height too short results in the debt collector being unable to climb objects over a certain height.")]
         public float jumpHeight = 2f;
@@ -197,9 +214,10 @@ namespace FiscalShock.AI {
         private float footSize;
 
         /// <summary>
-        /// Initializes the necessary fields for the debt collector and initializes the AStar script.
+        /// Initializes the necessary fields for the debt collector and
+        /// initializes the AStar script.
         /// </summary>
-        void Start() {
+        private void Start() {
             if (player == null) {
                 player = GameObject.FindGameObjectWithTag("Player");
             }
@@ -240,7 +258,9 @@ namespace FiscalShock.AI {
         }
 
         /// <summary>
-        /// Detect any obtacles and determine the best direction to go towards.
+        /// Detect any obstacles and determine the best direction to go towards.
+        /// Opening the Unity Editor scene view and watching the DC is the
+        /// quickest way to see what's going on here.
         /// </summary>
         /// <param name="target">The direction against which to raycast.</param>
         /// <returns>A vector representing the safest direction to go towards.</returns>
@@ -376,6 +396,10 @@ namespace FiscalShock.AI {
             return forwardWhisker;
         }
 
+        /// <summary>
+        /// Updates pathfinding every fixed update (currently 0.02 in project
+        /// settings).
+        /// </summary>
         private void FixedUpdate() {
             // Can be stunned, but not hurt. He is immortal. Only death can free you of debt.
             // (Or, ya' know, paying off your debt.)
@@ -383,6 +407,7 @@ namespace FiscalShock.AI {
                 return;
             }
 
+            // Figure out the vectors for where to head to.
             Vector3 playerDirection = (player.transform.position - transform.position).normalized;
             Vector3 flatPlayerDirection = new Vector3(playerDirection.x, 0, playerDirection.z);
             Vector2 flatPosition = new Vector2(transform.position.x, transform.position.z);
@@ -392,9 +417,11 @@ namespace FiscalShock.AI {
 
             saveCounter++;
 
+            // Apply gravity as needed.
             setVerticalMovement();
 
             // DC has been in the same cell for too long
+            // But we don't want to teleport when we're really close to the player
             if (saveCounter >= teleportationSaveRate && distanceFromPlayer2D > 32f) {
                 // Easy to determine teleportation destination when the path is filled.
                 if (path != null && path.Count > 0) {
@@ -408,7 +435,7 @@ namespace FiscalShock.AI {
 
                     // Teleport to the nextDestinationNode (at 80% of max height).
                     verticalSpeed = 0f;
-                    isJumping = true;
+                    airborne = true;
                     transform.position = new Vector3(nextDestinationNode.x, teleportationHeight, nextDestinationNode.y);
 
                     // Turn on the character controller again.
@@ -499,7 +526,6 @@ namespace FiscalShock.AI {
                 //Debug.Log("NEXT DESTINATION: " + nextDestinationNode.vector);
                 #endif
 
-                // T: Vector2 -> Vector3
                 nextDestination = new Vector3(nextDestinationNode.x, transform.position.y, nextDestinationNode.y);
                 Vector3 unnormDirection = nextDestination - transform.position;
                 nextFlatDir = new Vector3(unnormDirection.x, 0, unnormDirection.z).normalized;
@@ -555,8 +581,9 @@ namespace FiscalShock.AI {
         }
 
         /// <summary>
-        /// Apply velocity changes.
+        /// Apply previously calculated velocity changes.
         /// </summary>
+        /// <param name="direction"><b>normalized</b> direction to move in</param>
         private void applyMovement(Vector3 direction) {
             // Rotate towards the desired direction.
             Quaternion safeDirectionRotation = Quaternion.LookRotation(direction);
@@ -574,25 +601,36 @@ namespace FiscalShock.AI {
             if (startJumping) {
                 verticalSpeed = jumpHeight;
                 startJumping = false;
-                isJumping = true;
+                airborne = true;
                 return;
             }
 
+            // Check if we're (reasoanbly close to) touching the ground. If not, we're obviously airborne and need to apply gravity.
             if (Physics.Raycast(transform.position, -Vector3.up, footSize, (1 << LayerMask.NameToLayer("Ground") | avoidance))) {
                 verticalSpeed = 0;
-                isJumping = false;
-            } else if (isJumping) {
+                airborne = false;
+            } else if (airborne) {
                 verticalSpeed -= gravity * Time.deltaTime;
-            } else {  // something strange happened and you're clearly not on the ground
-                isJumping = true;
+            } else {
+                airborne = true;
             }
         }
 
+        /// <summary>
+        /// Check for collisions. The controller collider was chosen, as it
+        /// worked the best out of various colliders we experimented with.
+        /// Unity's physics engine is not the nicest to deal with.
+        /// <para>Because this is based on controller collisions, collisions
+        /// are only detected from the front! That's okay, because the DC is
+        /// always facing the player, except when stunned.</para>
+        /// </summary>
+        /// <param name="col">information on the hit that occurred</param>
         private void OnControllerColliderHit(ControllerColliderHit col) {
             if (stunned) {  // Can stun and touch without game over, to some extent
                 return;
             }
 
+            // Handle being shot
             if (col.gameObject.tag == "Missile" || col.gameObject.tag == "Bullet") {
                 BulletBehavior bb = col.gameObject.GetComponent<BulletBehavior>();
                 if (bb == null) {
@@ -605,13 +643,14 @@ namespace FiscalShock.AI {
                 }
             }
 
+            // Handle touching the player by calling game over
             if (col.gameObject.tag == "Player" && !StateManager.playerDead && StateManager.totalDebt > 0) {
                 Debug.Log($"Player was caught by debt collector on floor {StateManager.currentFloor} with {StateManager.totalDebt} debt");
                 player.GetComponent<PlayerHealth>().endGameByDebtCollector();
                 return;
             }
 
-            // Jump on lateral collisions. Still gets triggered on corners, though
+            // Jump on lateral collisions. The DC still has some problems climbing certain objects, like the drums on their sides in the mines. Adjusting the value col.normal.y is checked against would help this.
             if (Mathf.Abs(col.normal.y) > 0.5f) {
                 return;
             }

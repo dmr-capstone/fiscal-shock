@@ -2,6 +2,9 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace FiscalShock.Graphs {
+    /// <summary>
+    /// Data structure representing a Voronoi diagram.
+    /// </summary>
     public class Voronoi : Graph {
         /// <summary>
         /// Corresponds to the vertices of the Delaunay triangulation
@@ -99,6 +102,10 @@ namespace FiscalShock.Graphs {
         }
     }
 
+    /// <summary>
+    /// Data structure representing a collection of Voronoi cells that comprise
+    /// a dungeon "room."
+    /// </summary>
     public class VoronoiRoom : Graph {
         public List<Cell> cells { get; private set; } = new List<Cell>();
         public Vertex site { get; }
@@ -113,6 +120,10 @@ namespace FiscalShock.Graphs {
         /// </summary>
         public static readonly double MAX_CELL_AREA = 2048;
 
+        /// <summary>
+        /// Create a new room, seeded by a single Delaunay vertex
+        /// </summary>
+        /// <param name="newSite"></param>
         public VoronoiRoom(Vertex newSite) {
             if (newSite.cell.getArea() < MAX_CELL_AREA) {
                 site = newSite;
@@ -127,26 +138,30 @@ namespace FiscalShock.Graphs {
         }
 
         /// <summary>
-        /// Any edge not included in another cell is part of the exterior
+        /// Any edge not included in another cell is part of the exterior.
         /// </summary>
-        public void setExterior() {
+        private void setExterior() {
             List<Edge> ext = cells
-            .SelectMany(c => c.sides)
-            .GroupBy(e => e)
-            .Where(g => g.Count() == 1)
-            .Select(g => g.First())
-            .ToList();
+                .SelectMany(c => c.sides)
+                .GroupBy(e => e)
+                .Where(g => g.Count() == 1)
+                .Select(g => g.First())
+                .ToList();
 
             exterior = new Polygon(ext);
             setBoundingBox();
             setInteriorEdges();
         }
 
-        public void setInteriorEdges() {
+        /// <summary>
+        /// Recalculate interior edges, which are all edges not included in
+        /// the list of exterior edges. Should only be called by `setExterior`.
+        /// </summary>
+        private void setInteriorEdges() {
             interiorEdges = cells
-            .SelectMany(c => c.sides)
-            .Except(exterior.sides)
-            .ToList();
+                .SelectMany(c => c.sides)
+                .Except(exterior.sides)
+                .ToList();
         }
 
         /// <summary>
@@ -169,15 +184,15 @@ namespace FiscalShock.Graphs {
             setEdges();
         }
 
-        public void setBoundingBox() {
+        private void setBoundingBox() {
             boundingBox = exterior.getBoundingBox();
         }
 
-        public void setVertices() {
+        private void setVertices() {
             vertices = cells.SelectMany(c => c.vertices).Distinct().ToList();
         }
 
-        public void setEdges() {
+        private void setEdges() {
             edges = cells.SelectMany(c => c.sides).Distinct().ToList();
         }
     }

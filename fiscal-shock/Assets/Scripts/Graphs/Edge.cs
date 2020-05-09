@@ -20,11 +20,23 @@ namespace FiscalShock.Graphs {
         /// </summary>
         internal bool toIgnore { get; set; } = false;
 
+        /// <summary>
+        /// Create an edge between two vertices. Must call
+        /// `connect` on the resulting edge with the two vertices
+        /// to update neighborhoods and incident edges!
+        /// </summary>
+        /// <param name="a">vertex a</param>
+        /// <param name="b">vertex b</param>
         public Edge(Vertex a, Vertex b) {
             vertices = new List<Vertex> { a, b };
             length = getLength();
         }
 
+        /// <summary>
+        /// Create an edge based on two Unity Vector3s
+        /// </summary>
+        /// <param name="a">vertex a</param>
+        /// <param name="b">vertex b</param>
         public Edge(UnityEngine.Vector3 a, UnityEngine.Vector3 b) {
             Vertex va = new Vertex(a.x, a.z);
             Vertex vb = new Vertex(b.x, b.z);
@@ -32,6 +44,17 @@ namespace FiscalShock.Graphs {
             length = getLength();
         }
 
+        /// <summary>
+        /// Properly update the neighborhoods and incident edges of
+        /// the given vertices. This is separate from the Edge constructor
+        /// so that it's possible to create edges for temporary use without
+        /// mucking up the actual vertices involved, since these are all
+        /// call by reference.
+        /// Maybe this should just connect the two vertices p and q of
+        /// this edge...
+        /// </summary>
+        /// <param name="a">vertex a</param>
+        /// <param name="b">vertex b</param>
         public void connect(Vertex a, Vertex b) {
             a.neighborhood.Add(b);
             b.neighborhood.Add(a);
@@ -40,12 +63,24 @@ namespace FiscalShock.Graphs {
         }
 
         /* Delaunator-only helper functions */
+        /// <summary>
+        /// Delaunator helper function to determine the index of the triangle
+        /// that an edge belongs to
+        /// </summary>
+        /// <param name="eid">id of an edge</param>
+        /// <returns></returns>
         public static int getTriangleId(int eid) {
             return eid / 3;
         }
         /* End Delaunator helper functions */
 
         /* Comparator functions - needed for LINQ */
+        /// <summary>
+        /// Equal check. Two edges are equal if their endpoints
+        /// are the same (in any order).
+        /// </summary>
+        /// <param name="obj">object to compare to</param>
+        /// <returns>equality</returns>
         public override bool Equals(object obj) {
             if (obj is Edge other) {
                 return (p.Equals(other.p) && q.Equals(other.q)) || (p.Equals(other.q) && q.Equals(other.p));
@@ -54,7 +89,8 @@ namespace FiscalShock.Graphs {
         }
 
         /// <summary>
-        /// Taken from https://stackoverflow.com/a/2280213
+        /// Taken from https://stackoverflow.com/a/2280213.
+        /// Needed for LINQ comparisons.
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode() {
@@ -82,6 +118,11 @@ namespace FiscalShock.Graphs {
             return p.getAngleOfRotationTo(q);
         }
 
+        /// <summary>
+        /// Find the intersection between two edges.
+        /// </summary>
+        /// <param name="other">other edge</param>
+        /// <returns>intersection point</returns>
         public Vertex findIntersection(Edge other) {
             double[] vertices = Mathy.findIntersection(
                 p.vector.x, p.vector.y,

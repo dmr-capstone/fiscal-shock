@@ -6,9 +6,8 @@ using System.IO;
 
 // Algorithm Source: https://theory.stanford.edu/~amitp/GameProgramming/ImplementationNotes.html
 namespace FiscalShock.Pathfinding {
-
     /// <summary>
-    /// The AStar class instance stores an instance of the navigation graph and 
+    /// The AStar class instance stores an instance of the navigation graph and
     /// allows the user to find a path to some destination using the graph.
     /// </summary>
     public class AStar {
@@ -24,7 +23,7 @@ namespace FiscalShock.Pathfinding {
         private Delaunay navGraph;
 
         /// <summary>
-        /// Instantiates AStar using the given Delaunay Triangulation. 
+        /// Instantiates AStar using the given Delaunay Triangulation.
         /// </summary>
         /// <param name="graph"></param>
         public AStar(Delaunay graph) {
@@ -165,7 +164,7 @@ namespace FiscalShock.Pathfinding {
                 return;
             }
 
-            // Insert into a non-empty list. 
+            // Insert into a non-empty list.
             while(true) {
                 // When the fcosts are equal, have to check hcost to determine insertion position.
                 if(currentNode.Value.fCost == node.fCost) {

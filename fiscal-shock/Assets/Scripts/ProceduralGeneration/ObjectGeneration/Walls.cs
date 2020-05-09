@@ -5,9 +5,15 @@ using System.Linq;
 using FiscalShock.Graphs;
 
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Handles generation of walls in a dungeon and unfortunately some other
+    /// miscellaneous tasks.
+    /// </summary>
     public static class Walls {
         /// <summary>
-        /// All CharacterControllers should be able to fit through hallways
+        /// All CharacterControllers should be able to fit through hallways.
+        /// Ideally, this would get each character controller from the
+        /// DungeonType's list of enemies and find the max of the diameters.
         /// </summary>
         private readonly static float FATTEST_CONTROLLER = 6f;
 
@@ -268,9 +274,8 @@ namespace FiscalShock.Procedural {
         /// <summary>
         /// Remove walls that don't need to exist for performance reasons
         /// </summary>
-        /// <param name="d"></param>
-        /// <param name="wallsToKeep"></param>
-
+        /// <param name="d">dungeoneer object</param>
+        /// <param name="wallsToKeep">list of walls to avoid destroying</param>
         private static void destroyLagWalls(Dungeoneer d, List<GameObject> wallsToKeep) {
             foreach (VoronoiRoom r in d.roomVoronoi) {
                 foreach (Edge e in r.exterior.sides) {
