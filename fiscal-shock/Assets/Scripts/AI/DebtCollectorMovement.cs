@@ -645,7 +645,6 @@ namespace FiscalShock.AI {
 
             // Handle touching the player by calling game over
             if (col.gameObject.tag == "Player" && !StateManager.playerDead && StateManager.totalDebt > 0) {
-                Debug.Log($"Player was caught by debt collector on floor {StateManager.currentFloor} with {StateManager.totalDebt} debt");
                 player.GetComponent<PlayerHealth>().endGameByDebtCollector();
                 return;
             }

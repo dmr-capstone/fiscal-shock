@@ -275,7 +275,7 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Placing portals took {sw.ElapsedMilliseconds} ms");
             sw.Reset();
 
-            if (spawnEnemiesDebug && StateManager.startedFromDungeon) {
+            if (spawnEnemiesDebug || !StateManager.startedFromDungeon) {
                 Debug.Log("Starting enemy placement");
                 sw.Start();
                 spawnEnemies();
