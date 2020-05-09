@@ -115,16 +115,6 @@ namespace FiscalShock.AI {
         private float whiskerLength = 5f;
 
         /// <summary>
-        /// How often the raycast should happen.
-        /// </summary>
-        private int whiskerSampleRate = 10;
-
-        /// <summary>
-        /// The updates passed since a raycast last happened.
-        /// </summary>
-        private int whiskerSampleCounter = 0;
-
-        /// <summary>
         /// The amount of updates that should pass before the debt collector is teleported
         /// to a new location, probably due to being stuck in a corner.
         /// </summary>
@@ -135,6 +125,8 @@ namespace FiscalShock.AI {
         /// trigger zone.
         /// </summary>
         internal int saveCounter = 0;
+
+        public List<Vertex> recentlyVisitedNodes = new List<Vertex>();
 
         /// <summary>
         /// How high up the debt collector should be teleported. Needed because teleporting
@@ -223,7 +215,7 @@ namespace FiscalShock.AI {
 
             // LayerMask.NameToLayer can only be used at runtime.
             jumpable = ((1 << LayerMask.NameToLayer("Obstacle")) | (1 << LayerMask.NameToLayer("Explosive") | (1 << LayerMask.NameToLayer("Decoration"))));
-            avoidance = (1 << LayerMask.NameToLayer("Wall") | jumpable);
+            avoidance = (1 << LayerMask.NameToLayer("Wall"));
 
             // Set stun thresholds.
             stunThresholdModifier = (float)Mathf.Log10(Mathf.Pow(StateManager.totalFloorsVisited, 0.3f)) + StateManager.totalFloorsVisited/4.0f + 1.0f;
@@ -242,7 +234,7 @@ namespace FiscalShock.AI {
 
             // DEBUG
             #if UNITY_EDITOR
-            Debug.Log("LAST VISITED NODE: " + lastVisitedNode.vector);
+            //Debug.Log("LAST VISITED NODE: " + lastVisitedNode.vector);
             Debug.Log($"DC speed is {movementSpeed} and x{debtSpeedMod}; player speed is {playerSpeed}");
             #endif
         }
@@ -255,135 +247,130 @@ namespace FiscalShock.AI {
         private Vector3 findSafeDirection(Vector3 target) {
             forwardWhisker = target;
 
-            // Only check if the raycasts are due for checking.
-            if (whiskerSampleCounter >= whiskerSampleRate) {
-                whiskerSampleCounter = 0;
+            // Draw the forward whisker.
+            #if UNITY_EDITOR
+            Debug.DrawRay(transform.position, forwardWhisker * whiskerLength, Color.blue, 2);
+            #endif
 
-                // Draw the forward whisker.
+            // Create right 75 degrees and left 75 degrees whiskers.
+            left75 = Quaternion.Euler(0, -75, 0) * forwardWhisker;
+            right75 = Quaternion.Euler(0, 75, 0) * forwardWhisker;
+
+            RaycastHit hit;
+            // Check the forward whisker.
+            if (Physics.Raycast(transform.position, forwardWhisker, out hit, whiskerLength, avoidance)) {
+                // Debug.Log($"Forward whisker hit {hit.collider.gameObject.name}");
+
+                // Draw the left and right whiskers.
                 #if UNITY_EDITOR
-                Debug.DrawRay(transform.position, forwardWhisker * whiskerLength, Color.blue, 2);
+                Debug.DrawRay(transform.position, right75 * whiskerLength, Color.red, 1);
+                Debug.DrawRay(transform.position, left75 * whiskerLength, Color.green, 1);
                 #endif
 
-                // Create right 75 degrees and left 75 degrees whiskers.
-                left75 = Quaternion.Euler(0, -75, 0) * forwardWhisker;
-                right75 = Quaternion.Euler(0, 75, 0) * forwardWhisker;
+                // Find out if the 75 degree left and right whiskers hits something.
+                bool hitLeft, hitRight;
+                hitLeft = Physics.Raycast(transform.position, left75, whiskerLength, avoidance);
+                hitRight = Physics.Raycast(transform.position, right75, whiskerLength, avoidance);
 
-                RaycastHit hit;
-                // Check the forward whisker.
-                if (Physics.Raycast(transform.position, forwardWhisker, out hit, whiskerLength, avoidance)) {
-                    // Debug.Log($"Forward whisker hit {hit.collider.gameObject.name}");
-
-                    // Draw the left and right whiskers.
-                    #if UNITY_EDITOR
-                    Debug.DrawRay(transform.position, right75 * whiskerLength, Color.red, 1);
-                    Debug.DrawRay(transform.position, left75 * whiskerLength, Color.green, 1);
-                    #endif
-
-                    // Find out if the 75 degree left and right whiskers hits something.
-                    bool hitLeft, hitRight;
-                    hitLeft = Physics.Raycast(transform.position, left75, whiskerLength, avoidance);
-                    hitRight = Physics.Raycast(transform.position, right75, whiskerLength, avoidance);
-
-                    // Determine which whiskers were hit;
-                    if (hitLeft && !hitRight) {
-                        return right75;
-                    }
-
-                    else if (!hitLeft && hitRight) {
-                        return left75;
-                    }
-
-                    // Empty left and right to reuse for the next set of whiskers.
-                    else if (hitLeft && hitRight) {
-                        hitLeft = false;
-                        hitRight = false;
-                    }
-
-                    // Neither left nor right whisker hit.
-                    else {
-                        return left75;
-                    }
-
-                    // If didn't return in one of the previous cases, good sign that need to check next whiskers.
-                    // Calculate 120 degree left and right whiskers.
-                    left120 = Quaternion.Euler(0, -120, 0) * forwardWhisker;
-                    right120 = Quaternion.Euler(0, 120, 0) * forwardWhisker;
-
-                    // Draw the whiskers.
-                    #if UNITY_EDITOR
-                    Debug.DrawRay(transform.position, right120 * whiskerLength, Color.gray, 1);
-                    Debug.DrawRay(transform.position, left120 * whiskerLength, Color.yellow, 1);
-                    #endif
-
-                    // Find out if the 120 degree left and right whiskers hit something.
-                    hitLeft = Physics.Raycast(transform.position, left120, whiskerLength, avoidance);
-                    hitRight = Physics.Raycast(transform.position, right120, whiskerLength, avoidance);
-
-                    // Determine which whiskers were hit;
-                    if (hitLeft && !hitRight) {
-                        return right120;
-                    }
-
-                    else if (!hitLeft && hitRight) {
-                        return left120;
-                    }
-
-                    // Empty left and right to reuse for the next set of whiskers.
-                    else if (hitLeft && hitRight) {
-                        hitLeft = false;
-                        hitRight = false;
-                    }
-
-                    // Neither left nor right whisker hit.
-                    else {
-                        return left120;
-                    }
-
-                    // If didn't return in one of the previous cases, good sign that need to check next whiskers.
-                    // Calculate 150 degree left and right whiskers.
-                    left150 = Quaternion.Euler(0, -150, 0) * forwardWhisker;
-                    right150 = Quaternion.Euler(0, 150, 0) * forwardWhisker;
-
-                    // Draw the whiskers.
-                    #if UNITY_EDITOR
-                    Debug.DrawRay(transform.position, right150 * whiskerLength, Color.magenta, 1);
-                    Debug.DrawRay(transform.position, left150 * whiskerLength, Color.white, 1);
-                    #endif
-
-                    // Find out if the 120 degree left and right whiskers hit something.
-                    hitLeft = Physics.Raycast(transform.position, left150, whiskerLength, avoidance);
-                    hitRight = Physics.Raycast(transform.position, right150, whiskerLength, avoidance);
-
-                    // Determine which whiskers were hit;
-                    if (hitLeft && !hitRight) {
-                        return right150;
-                    }
-
-                    else if (!hitLeft && hitRight) {
-                        return left150;
-                    }
-
-                    // Empty left and right to reuse for the next set of whiskers.
-                    else if (hitLeft && hitRight) {
-                        hitLeft = false;
-                        hitRight = false;
-                    }
-
-                    // Neither left nor right whisker hit.
-                    else {
-                        return left150;
-                    }
-
-                    // If absolutely no other case works, return the backwards angle.
-                    backward = Vector3.Reflect(forwardWhisker * whiskerLength, hit.normal);
-
-                    // Draw the backwards ray.
-                    #if UNITY_EDITOR
-                    Debug.DrawRay(transform.position, backward * whiskerLength, Color.cyan, 1);
-                    #endif
-
-                    return backward;
+                // Determine which whiskers were hit;
+                if (hitLeft && !hitRight) {
+                    return right75;
                 }
+
+                else if (!hitLeft && hitRight) {
+                    return left75;
+                }
+
+                // Empty left and right to reuse for the next set of whiskers.
+                else if (hitLeft && hitRight) {
+                    hitLeft = false;
+                    hitRight = false;
+                }
+
+                // Neither left nor right whisker hit.
+                else {
+                    return left75;
+                }
+
+                // If didn't return in one of the previous cases, good sign that need to check next whiskers.
+                // Calculate 120 degree left and right whiskers.
+                left120 = Quaternion.Euler(0, -120, 0) * forwardWhisker;
+                right120 = Quaternion.Euler(0, 120, 0) * forwardWhisker;
+
+                // Draw the whiskers.
+                #if UNITY_EDITOR
+                Debug.DrawRay(transform.position, right120 * whiskerLength, Color.gray, 1);
+                Debug.DrawRay(transform.position, left120 * whiskerLength, Color.yellow, 1);
+                #endif
+
+                // Find out if the 120 degree left and right whiskers hit something.
+                hitLeft = Physics.Raycast(transform.position, left120, whiskerLength, avoidance);
+                hitRight = Physics.Raycast(transform.position, right120, whiskerLength, avoidance);
+
+                // Determine which whiskers were hit;
+                if (hitLeft && !hitRight) {
+                    return right120;
+                }
+
+                else if (!hitLeft && hitRight) {
+                    return left120;
+                }
+
+                // Empty left and right to reuse for the next set of whiskers.
+                else if (hitLeft && hitRight) {
+                    hitLeft = false;
+                    hitRight = false;
+                }
+
+                // Neither left nor right whisker hit.
+                else {
+                    return left120;
+                }
+
+                // If didn't return in one of the previous cases, good sign that need to check next whiskers.
+                // Calculate 150 degree left and right whiskers.
+                left150 = Quaternion.Euler(0, -150, 0) * forwardWhisker;
+                right150 = Quaternion.Euler(0, 150, 0) * forwardWhisker;
+
+                // Draw the whiskers.
+                #if UNITY_EDITOR
+                Debug.DrawRay(transform.position, right150 * whiskerLength, Color.magenta, 1);
+                Debug.DrawRay(transform.position, left150 * whiskerLength, Color.white, 1);
+                #endif
+
+                // Find out if the 120 degree left and right whiskers hit something.
+                hitLeft = Physics.Raycast(transform.position, left150, whiskerLength, avoidance);
+                hitRight = Physics.Raycast(transform.position, right150, whiskerLength, avoidance);
+
+                // Determine which whiskers were hit;
+                if (hitLeft && !hitRight) {
+                    return right150;
+                }
+
+                else if (!hitLeft && hitRight) {
+                    return left150;
+                }
+
+                // Empty left and right to reuse for the next set of whiskers.
+                else if (hitLeft && hitRight) {
+                    hitLeft = false;
+                    hitRight = false;
+                }
+
+                // Neither left nor right whisker hit.
+                else {
+                    return left150;
+                }
+
+                // If absolutely no other case works, return the backwards angle.
+                backward = Vector3.Reflect(forwardWhisker * whiskerLength, hit.normal);
+
+                // Draw the backwards ray.
+                #if UNITY_EDITOR
+                Debug.DrawRay(transform.position, backward * whiskerLength, Color.cyan, 1);
+                #endif
+
+                return backward;
             }
 
             return forwardWhisker;
@@ -403,14 +390,12 @@ namespace FiscalShock.AI {
 
             distanceFromPlayer2D = Vector2.Distance(playerFlatPosition, flatPosition);
 
-            // Increase the raycast sample rate counter and the save counter.
-            whiskerSampleCounter++;
             saveCounter++;
 
             setVerticalMovement();
 
             // DC has been in the same cell for too long
-            if (saveCounter >= teleportationSaveRate) {
+            if (saveCounter >= teleportationSaveRate && distanceFromPlayer2D > 32f) {
                 // Easy to determine teleportation destination when the path is filled.
                 if (path != null && path.Count > 0) {
                     if (nextDestinationNode == null) {
@@ -476,7 +461,7 @@ namespace FiscalShock.AI {
                 // Obtain the "safe" direction to go.
                 Vector3 safeDir = findSafeDirection(flatPlayerDirection);
 
-                // Draw the direction to the player. 
+                // Draw the direction to the player.
                 #if UNITY_EDITOR
                 Debug.DrawRay(transform.position, safeDir * whiskerLength, Color.black, 1);
                 #endif
@@ -493,7 +478,7 @@ namespace FiscalShock.AI {
 
                 // DEBUG: Remove.
                 #if UNITY_EDITOR
-                Debug.Log("RECALCULATING PATH.");
+                //Debug.Log("RECALCULATING PATH.");
                 #endif
                 path = pathfinder.findPath(lastVisitedNode, hivemind.lastPlayerLocation);
 
@@ -511,7 +496,7 @@ namespace FiscalShock.AI {
 
                 // DEBUG: Remove or set debugging code.
                 #if UNITY_EDITOR
-                Debug.Log("NEXT DESTINATION: " + nextDestinationNode.vector);
+                //Debug.Log("NEXT DESTINATION: " + nextDestinationNode.vector);
                 #endif
 
                 // T: Vector2 -> Vector3
@@ -540,7 +525,7 @@ namespace FiscalShock.AI {
 
                     // DEBUG: Remove or set debugging code.
                     #if UNITY_EDITOR
-                    Debug.Log("NEXT DESTINATION: " + nextDestinationNode.vector);
+                    //Debug.Log("NEXT DESTINATION: " + nextDestinationNode.vector);
                     #endif
 
                     nextDestination = new Vector3(nextDestinationNode.x, transform.position.y, nextDestinationNode.y);

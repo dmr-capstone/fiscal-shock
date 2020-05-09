@@ -82,7 +82,7 @@ namespace FiscalShock.Procedural {
             // and pick randomly later
             currentDungeonType = dungeonThemes
                 .Where(d => d.typeEnum == StateManager.selectedDungeon)
-                // .Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
+                //.Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
                 .Select(d => d.gameObject)
                 .First()
                 .GetComponent<DungeonType>();
@@ -450,7 +450,7 @@ namespace FiscalShock.Procedural {
                 spawnPoint = masterDt.vertices[mt.Next(masterDt.vertices.Count-1)];
             } while (spawnPoint.cell.hasPortal);
             SpawnPoint spawner = GameObject.FindGameObjectWithTag("Spawn Point").GetComponent<SpawnPoint>();
-            spawner.transform.position = spawnPoint.toVector3AtHeight(currentDungeonType.wallHeight * 0.8f);
+            spawner.transform.position = spawnPoint.toVector3AtHeight(currentDungeonType.wallHeight * 0.7f);
             player = spawner.spawnPlayer();
 
             // Set the player's original spawn point.
@@ -473,7 +473,7 @@ namespace FiscalShock.Procedural {
             // Enable firing script (disabled in hub)
             PlayerShoot shootScript = player.GetComponentInChildren<PlayerShoot>();
             shootScript.enabled = true;
- 
+
             if (StateManager.startedFromDungeon) {
                 // Give player weapons when starting in dungeon, since that implies it's a dev starting in the editor
                 Debug.Log("Looks like you launched this scene directly from the editor. Here's some free stuff...");

@@ -40,7 +40,7 @@ public class EnemyHealth : MonoBehaviour {
     /// <summary>
     /// Queue for object pooling
     /// </summary>
-    private Queue<GameObject> explosions = new Queue<GameObject>();
+    public Queue<GameObject> explosions = new Queue<GameObject>();
 
     /// <summary>
     /// Number of explosions to pool to avoid garbage collection spikes
@@ -50,7 +50,7 @@ public class EnemyHealth : MonoBehaviour {
     /// <summary>
     /// Queue for object pooling
     /// </summary>
-    private Queue<GameObject> bigExplosions = new Queue<GameObject>();
+    public Queue<GameObject> bigExplosions = new Queue<GameObject>();
 
     /// <summary>
     /// Number of explosions to pool to avoid garbage collection spikes
@@ -68,7 +68,9 @@ public class EnemyHealth : MonoBehaviour {
     /// <summary>
     /// Reference to this bot's rigidbody, used for explosives
     /// </summary>
-    private Rigidbody ragdoll;
+    public CharacterController ragdoll;
+    public float mass = 3.0f;
+    private Vector3 impact;
 
     /// <summary>
     /// Counter checked against max enmity duration
@@ -91,7 +93,7 @@ public class EnemyHealth : MonoBehaviour {
     private void Start() {
         feed = GameObject.FindGameObjectWithTag("HUD").GetComponent<FeedbackController>();
         currentHealth = startingHealth;
-        ragdoll = gameObject.GetComponent<Rigidbody>();
+        ragdoll = gameObject.GetComponent<CharacterController>();
 
         for (int i = 0; i < smallExplosionLimit; ++i) {
             GameObject splode = Instantiate(explosion, gameObject.transform.position + transform.up, gameObject.transform.rotation);
@@ -142,12 +144,17 @@ public class EnemyHealth : MonoBehaviour {
         EnemyMovement em = gameObject.GetComponentInChildren<EnemyMovement>();
         es.enabled = false;
         em.stunned = true;
-        yield return new WaitForSeconds(duration);
+
+        while (impact.magnitude > 0.2f) {
+            ragdoll.Move(impact * Time.deltaTime);
+            impact = Vector3.Lerp(impact, Vector3.zero, duration * Time.deltaTime);
+            yield return null;
+        }
+        //yield return new WaitForSeconds(duration);
 
         em.enabled = true;
         em.stunned = false;
         stunEffect.SetActive(false);
-        ragdoll.isKinematic = true;
 
         yield return null;
     }
@@ -237,29 +244,13 @@ public class EnemyHealth : MonoBehaviour {
         StartCoroutine(explode.GetComponent<Explosion>().timeout());
     }
 
-    /// <summary>
-    /// Handle collision events. Only player bullets and missiles are accounted
-    /// for, so enemies currently can't hurt each other.
-    /// </summary>
-    /// <param name="col">collision event data</param>
-    private void OnCollisionEnter(Collision col) {
-        if (col.gameObject.tag == "Bullet" || col.gameObject.tag == "Missile") {
-            if (col.gameObject == lastBulletCollision) {
-                return;
-            }
-            lastBulletCollision = col.gameObject;
-
-            // Reduce health
-            BulletBehavior bullet = col.gameObject.GetComponent<BulletBehavior>();
-            if (bullet == null) {  // try checking parents
-                bullet = col.gameObject.GetComponentInParent<BulletBehavior>();
-            }
-            takeDamage(bullet.damage, 1);
-            if (col.gameObject.tag == "Bullet") {
-                showDamageExplosion(explosions, 0.4f);
-            } else if (col.gameObject.tag == "Missile") {
-                showDamageExplosion(bigExplosions, 0.65f);
-            }
+    public void addImpact(Vector3 direction, float force) {
+        direction.Normalize();
+        if (direction.y < 0) {
+            direction.y = -direction.y;
+        } else {
+            direction.y = 1f;
         }
+        impact += direction.normalized * force / mass;
     }
 }

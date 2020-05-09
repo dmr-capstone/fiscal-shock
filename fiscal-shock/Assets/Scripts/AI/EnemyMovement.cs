@@ -52,7 +52,7 @@ namespace FiscalShock.AI {
         /// <summary>
         /// Used to force enemies to the ground at script startup.
         /// </summary>
-        private bool isGrounded = false;
+        public bool isGrounded = false;
 
         /// <summary>
         /// Set to true if a collision happens against an object that we're avoiding
@@ -70,9 +70,9 @@ namespace FiscalShock.AI {
         /// <summary>
         /// The point towards which the enemy character is headed.
         /// </summary>
-        private Vector3 destination;
+        public Vector3 destination;
 
-        private float gravity = 40f;
+        public float gravity = 40f;
 
         private float safeRadiusAvg;
 
@@ -92,16 +92,6 @@ namespace FiscalShock.AI {
         /// How long the whiskers should be.
         /// </summary>
         private float whiskerLength = 5f;
-
-        /// <summary>
-        /// How often the raycast should happen.
-        /// </summary>
-        private int whiskerSampleRate = 10;
-
-        /// <summary>
-        /// The updates passed since a raycast last happened.
-        /// </summary>
-        private int whiskerSampleCounter = 0;
 
         /// <summary>
         /// Layers the debt collector tries to avoid.
@@ -135,6 +125,11 @@ namespace FiscalShock.AI {
         /// </summary>
         public bool isAttacking = false;
 
+        private float verticalSpeed = 0f;
+
+        private float footSize;
+
+
         private void Start() {
             if (player == null) {
                 player = GameObject.FindGameObjectWithTag("Player");
@@ -146,22 +141,57 @@ namespace FiscalShock.AI {
             jumpable = ((1 << LayerMask.NameToLayer("Obstacle")) | (1 << LayerMask.NameToLayer("Explosive") | (1 << LayerMask.NameToLayer("Decoration"))));
             avoidance = (1 << LayerMask.NameToLayer("Wall") | jumpable);
 
-            prevPlayerFlatPos = new Vector3(player.transform.position.x, 0, player.transform.position.z);
             safeRadiusAvg = (safeRadiusMax + safeRadiusMin) / 2;
             destinationRefreshDistance = safeRadiusAvg - safeRadiusMin;
+
+            footSize = controller.bounds.extents.y;
+
+            if (player == null) {
+                Debug.LogError($"{gameObject.name}: No player found!!");
+                return;
+            }
+
+            prevPlayerFlatPos = new Vector3(player.transform.position.x, 0, player.transform.position.z);
         }
 
         private void FixedUpdate() {
+            #if UNITY_EDITOR
+            //Debug.DrawRay(transform.position, -Vector3.up * footSize, Color.yellow, 1);
+            #endif
+
+            // TODO use wall heights instead
+            // In some levels (dungeon) and given some sizes of enemies, they can get stuck on the ceiling
+            if (transform.position.y > 8f) {
+                controller.enabled = false;
+                transform.position = new Vector3(transform.position.x, 3f, transform.position.z);
+                controller.enabled= true;
+            }
+
+            if (transform.position.y > footSize && Physics.Raycast(controller.center, -Vector3.up, out RaycastHit hit, footSize, (1 << LayerMask.NameToLayer("Ground") | jumpable))) {
+                verticalSpeed = 0;
+                isGrounded = true;
+            } else {
+                isGrounded = false;
+            }
             // Apply gravity after spawning.
             if (!isGrounded) {
-                controller.Move(new Vector3(0, -gravity * Time.deltaTime, 0) * movementSpeed * Time.deltaTime);
-                return;
+                verticalSpeed -= gravity * Time.deltaTime;
+            } else {
+                verticalSpeed = 0f;
             }
 
             // Play an idling animation when there is no player.
             if ((player == null || (Vector3.Distance(player.transform.position, gameObject.transform.position) > visionRadius) || stunned) && !health.enmityActive) {
                 animationManager.playIdleAnimation();
                 shootScript.spottedPlayer = false;
+
+                Vector3 idleDirection = Vector3.zero;
+                Vector3 idleFacing = transform.rotation.eulerAngles;
+
+                // Apply gravity even when the player isn't near
+                if (!isGrounded) {
+                    applyMovement(Vector3.zero, transform.rotation.eulerAngles);
+                }
                 return;
             }
 
@@ -170,13 +200,13 @@ namespace FiscalShock.AI {
                 StartCoroutine(reactToNearbyPlayer());
             }
 
+            if (isAttacking) {
+                return;
+            }
+
             // Don't interrupt other animations to play movement.
             if (!animationManager.animator.isPlaying || animationManager.animator.IsPlaying("idle0")) {
                 animationManager.playMoveAnimation();
-            }
-
-            if (isAttacking) {
-                return;
             }
 
             Vector3 playerDirection = (player.transform.position - transform.position).normalized;
@@ -188,7 +218,6 @@ namespace FiscalShock.AI {
 
             // Calculate the distance from the player.
             distanceFromPlayer2D = Vector3.Distance(playerFlatPosition, flatPosition);
-            whiskerSampleCounter++;
 
             if (distanceFromPlayer2D < visionRadius) {
                 if (distanceFromPlayer2D > safeRadiusMax) {
@@ -205,27 +234,24 @@ namespace FiscalShock.AI {
 
                 if (distanceFromPlayer2D <= safeRadiusMax && distanceFromPlayer2D >= safeRadiusMin) {
                     if (!recalculateDestination && Vector3.Distance(playerFlatPosition, prevPlayerFlatPos) < destinationRefreshDistance) {
-                        // The point at which the mook would appear if followed the straight line to the destination. 
-                        Vector3 linearTarget = flatPosition + ((destination - flatPosition).normalized * movementSpeed * Time.deltaTime);
+                        // The point at which the mook would appear if followed the straight line to the destination.
+                        Vector3 linearDirection = flatPosition + ((destination - flatPosition).normalized);
 
                         // Offset from linear position in opposite direction from player, as determined by the average safe radius.
-                        float distanceDiff = safeRadiusAvg - Vector3.Distance(playerFlatPosition, linearTarget);
+                        float distanceDiff = safeRadiusAvg - Vector3.Distance(playerFlatPosition, linearDirection);
 
                         // Get next position in orbit around player. Should still be 0 on y at this point.
-                        Vector3 targetPosition = getOrbitalCoordinate(linearTarget, playerFlatPosition, distanceDiff);
-                        Debug.Log("TARGET POSITON: " + targetPosition);
+                        Vector3 targetPosition = (getOrbitalCoordinate(linearDirection, playerFlatPosition, distanceDiff)).normalized;
+                        targetPosition.y = verticalSpeed;
+                        //Debug.Log($"{gameObject.name} TARGET POSITION: {targetPosition} from {flatPosition}");
 
                         if (Vector3.Distance(targetPosition, destination) < destinationRefreshDistance) {
                             recalculateDestination = true;
                         }
 
-                        targetPosition.y = transform.position.y;
+                        Vector3 desiredDirection = findSafeDirection((targetPosition - transform.position).normalized);
 
-                        Quaternion rotate = Quaternion.LookRotation(playerDirection);
-                        transform.rotation = Quaternion.Slerp(transform.rotation, rotate, Time.deltaTime * rotationSpeed);
-
-                        // ARLEADY MULTIPLIED BY MOVEMENT SPEED.
-                        controller.Move(linearTarget);
+                        applyMovement(desiredDirection, playerDirection);
                         return;
                     }
 
@@ -255,7 +281,10 @@ namespace FiscalShock.AI {
             Quaternion rotation = Quaternion.LookRotation(rotationDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * rotationSpeed);
 
-            controller.SimpleMove(direction * movementSpeed/* * Time.deltaTime*/);
+            // Vertical speed shouldn't be affected by movement speed.
+            Vector3 destination = (new Vector3(direction.x, 0, direction.z)).normalized * movementSpeed;
+            destination.y = verticalSpeed;
+            controller.Move(destination * Time.deltaTime);
         }
 
         /// <summary>
@@ -266,61 +295,56 @@ namespace FiscalShock.AI {
         private Vector3 findSafeDirection(Vector3 target) {
             forwardWhisker = target;
 
-            // Only check if the raycasts are due for checking.
-            if (whiskerSampleCounter >= whiskerSampleRate) {
-                whiskerSampleCounter = 0;
+            // Draw the forward whisker.
+            #if UNITY_EDITOR
+            Debug.DrawRay(transform.position, forwardWhisker * whiskerLength, Color.blue, 2);
+            #endif
 
-                // Draw the forward whisker.
+            // Create right 75 degrees and left 75 degrees whiskers.
+            left75 = Quaternion.Euler(0, -75, 0) * forwardWhisker;
+            right75 = Quaternion.Euler(0, 75, 0) * forwardWhisker;
+
+            RaycastHit hit;
+            // Check the forward whisker.
+            if (Physics.Raycast(transform.position, forwardWhisker, out hit, whiskerLength, avoidance)) {
+                // Debug.Log($"Forward whisker hit {hit.collider.gameObject.name}");
+
+                // Draw the left and right whiskers.
                 #if UNITY_EDITOR
-                Debug.DrawRay(transform.position, forwardWhisker * whiskerLength, Color.blue, 2);
+                Debug.DrawRay(transform.position, right75 * whiskerLength, Color.red, 1);
+                Debug.DrawRay(transform.position, left75 * whiskerLength, Color.green, 1);
                 #endif
 
-                // Create right 75 degrees and left 75 degrees whiskers.
-                left75 = Quaternion.Euler(0, -75, 0) * forwardWhisker;
-                right75 = Quaternion.Euler(0, 75, 0) * forwardWhisker;
+                // Find out if the 75 degree left and right whiskers hits something.
+                bool hitLeft, hitRight;
+                hitLeft = Physics.Raycast(transform.position, left75, whiskerLength, avoidance);
+                hitRight = Physics.Raycast(transform.position, right75, whiskerLength, avoidance);
 
-                RaycastHit hit;
-                // Check the forward whisker.
-                if (Physics.Raycast(transform.position, forwardWhisker, out hit, whiskerLength, avoidance)) {
-                    // Debug.Log($"Forward whisker hit {hit.collider.gameObject.name}");
+                // Determine which whiskers were hit;
+                if (hitLeft && !hitRight) {
+                    return right75;
+                }
 
-                    // Draw the left and right whiskers.
+                else if (!hitLeft && hitRight) {
+                    return left75;
+                }
+
+                // Empty left and right to reuse for the next set of whiskers.
+                else if (hitLeft && hitRight) {
+                    // If absolutely no other case works, return the backwards angle.
+                    backward = Vector3.Reflect(forwardWhisker * whiskerLength, hit.normal);
+
+                    // Draw the backwards ray.
                     #if UNITY_EDITOR
-                    Debug.DrawRay(transform.position, right75 * whiskerLength, Color.red, 1);
-                    Debug.DrawRay(transform.position, left75 * whiskerLength, Color.green, 1);
+                    Debug.DrawRay(transform.position, backward * whiskerLength, Color.cyan, 1);
                     #endif
 
-                    // Find out if the 75 degree left and right whiskers hits something.
-                    bool hitLeft, hitRight;
-                    hitLeft = Physics.Raycast(transform.position, left75, whiskerLength, avoidance);
-                    hitRight = Physics.Raycast(transform.position, right75, whiskerLength, avoidance);
+                    return backward;
+                }
 
-                    // Determine which whiskers were hit;
-                    if (hitLeft && !hitRight) {
-                        return right75;
-                    }
-
-                    else if (!hitLeft && hitRight) {
-                        return left75;
-                    }
-
-                    // Empty left and right to reuse for the next set of whiskers.
-                    else if (hitLeft && hitRight) {
-                        // If absolutely no other case works, return the backwards angle.
-                        backward = Vector3.Reflect(forwardWhisker * whiskerLength, hit.normal);
-
-                        // Draw the backwards ray.
-                        #if UNITY_EDITOR
-                        Debug.DrawRay(transform.position, backward * whiskerLength, Color.cyan, 1);
-                        #endif
-
-                        return backward;
-                    }
-
-                    // Neither left nor right whisker hit.
-                    else {
-                        return left75;
-                    }
+                // Neither left nor right whisker hit.
+                else {
+                    return left75;
                 }
             }
 
@@ -341,8 +365,6 @@ namespace FiscalShock.AI {
         }
 
         private void OnControllerColliderHit(ControllerColliderHit col) {
-            isGrounded = true;
-
             if (col.gameObject.layer == avoidance) {
                 // Reset the destination on the orbit.
                 recalculateDestination = true;

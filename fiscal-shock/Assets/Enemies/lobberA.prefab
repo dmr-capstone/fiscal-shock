@@ -508,7 +508,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.02
+  m_Radius: 0.026
   m_Center: {x: 0, y: 0.02, z: 0}
 --- !u!1 &2033544682297040900
 GameObject:
@@ -944,13 +944,13 @@ CharacterController:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Height: 2
-  m_Radius: 5
+  m_Height: 0
+  m_Radius: 4
   m_SlopeLimit: 45
   m_StepOffset: 0.5
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 4, z: 0.5}
+  m_Center: {x: 0, y: 3.7, z: 0.5}
 --- !u!114 &2055187250603981074
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -998,6 +998,8 @@ MonoBehaviour:
   pointValue: 45
   animationManager: {fileID: 7376106236208855819}
   stunEffect: {fileID: 2831081528224280656}
+  ragdoll: {fileID: 0}
+  mass: 3
   enmityActive: 0
   maxEnmityDuration: 10
   cryForHelpRadius: 25
@@ -1019,6 +1021,9 @@ MonoBehaviour:
   safeRadiusMax: 30
   visionRadius: 35
   player: {fileID: 0}
+  isGrounded: 0
+  destination: {x: 0, y: 0, z: 0}
+  gravity: 40
   animationManager: {fileID: 7376106236208855819}
   health: {fileID: 9092076683911019700}
   isAttacking: 0

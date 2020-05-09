@@ -94,6 +94,17 @@ public class BulletBehavior : MonoBehaviour
                 // If an enemy bullet has struck something, delete it (no ricochet)
                 Destroy(gameObject);
             }
+            return;
+        }
+        if (col.gameObject.layer == LayerMask.NameToLayer("Enemy")) {
+            EnemyHealth eh = col.gameObject.GetComponentInChildren<EnemyHealth>() ?? col.gameObject.GetComponentInParent<EnemyHealth>();
+
+            eh.takeDamage(damage, 1);
+            if (gameObject.tag == "Bullet") {
+                eh.showDamageExplosion(eh.explosions, 0.4f);
+            } else if (gameObject.tag == "Missile") {
+                eh.showDamageExplosion(eh.bigExplosions, 0.65f);
+            }
         }
         if (ricochetEnabled && !hitSomething) {  // ricochet just once
             hitSomething = true;
@@ -101,7 +112,9 @@ public class BulletBehavior : MonoBehaviour
             Vector3 norm = col.GetContact(0).normal;
             ricochetDirection = Vector3.Reflect(transform.position, norm * 20).normalized;
             target = null;
-        }
+        } else if (!ricochetEnabled) {
+                gameObject.SetActive(false);
+            }
     }
 
     /// <summary>
@@ -111,7 +124,7 @@ public class BulletBehavior : MonoBehaviour
     /// </summary>
     public IEnumerator timeout() {
         yield return new WaitForSeconds(bulletLifetime);
-        transform.gameObject.SetActive(false);
+        gameObject.SetActive(false);
         yield return null;
     }
 

@@ -40,6 +40,14 @@ namespace FiscalShock.Pathfinding {
 
                 // Debug.Log($"Debt Collector stepped into {gameObject.name}");
                 dcMovement.lastVisitedNode = cellSite;
+                if (dcMovement.recentlyVisitedNodes.Contains(cellSite)) {
+                    dcMovement.saveCounter++;
+                    return;
+                }
+                if (dcMovement.recentlyVisitedNodes.Count >= 3) {
+                    dcMovement.recentlyVisitedNodes.RemoveAt(0);
+                }
+                dcMovement.recentlyVisitedNodes.Add(cellSite);
                 dcMovement.saveCounter = 0;
             }
         }

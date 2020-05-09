@@ -100,7 +100,7 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.01
+  m_Radius: 0.013
   m_Height: 0.05
   m_Direction: 1
   m_Center: {x: 0, y: 0.004, z: 0}
@@ -309,13 +309,13 @@ CharacterController:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Height: 10
-  m_Radius: 1.1
+  m_Height: 8
+  m_Radius: 1
   m_SlopeLimit: 45
   m_StepOffset: 0.1
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: -2.1, z: 0}
+  m_Center: {x: 0, y: -1.5, z: 0}
 --- !u!111 &6319583115611827495
 Animation:
   m_ObjectHideFlags: 0
@@ -450,6 +450,8 @@ MonoBehaviour:
   pointValue: 22
   animationManager: {fileID: 2153995193128306830}
   stunEffect: {fileID: 1317176121408274733}
+  ragdoll: {fileID: 0}
+  mass: 3
   enmityActive: 0
   maxEnmityDuration: 5
   cryForHelpRadius: 35
@@ -471,6 +473,9 @@ MonoBehaviour:
   safeRadiusMax: 12
   visionRadius: 55
   player: {fileID: 0}
+  isGrounded: 0
+  destination: {x: 0, y: 0, z: 0}
+  gravity: 40
   animationManager: {fileID: 2153995193128306830}
   health: {fileID: 175483714617530926}
   isAttacking: 0
