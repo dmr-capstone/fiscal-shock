@@ -20,6 +20,12 @@ namespace FiscalShock.Graphs {
             return (a * d) - (b * c);
         }
 
+        /// <summary>
+        /// Shortcut to determinant of a 2x2 matrix of 2 vertices
+        /// </summary>
+        /// <param name="a">vertex a</param>
+        /// <param name="b">vertex b</param>
+        /// <returns>determinant of the matrix (row-column) [ [a.x, b.x], [a.y, b.y] ]</returns>
         public static double determinant2(Vertex a, Vertex b) {
             return determinant2(a.x, b.x, a.y, b.y);
         }
@@ -33,7 +39,8 @@ namespace FiscalShock.Graphs {
         }
 
         /// <summary>
-        /// <para>atan2 range: [-π, π]</para>
+        /// Determines the angle of rotation between two points.
+        /// /// <para>atan2 range: [-π, π]</para>
         /// </summary>
         /// <param name="x1"></param>
         /// <param name="y1"></param>
@@ -45,7 +52,8 @@ namespace FiscalShock.Graphs {
         }
 
         /// <summary>
-        /// Find a point on the line drawn at the angle theta from site that is distance units away from site.
+        /// Find a point on the line drawn at the angle theta from site that is
+        /// distance units away from site.
         /// </summary>
         /// <param name="x">x-coordinate of site</param>
         /// <param name="y">y-coordinate of site</param>
@@ -60,7 +68,7 @@ namespace FiscalShock.Graphs {
 
         /// <summary>
         /// Find intersection between the lines ab and cd
-        /// http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
+        /// <para>http://www.cs.swan.ac.uk/~cssimon/line_intersection.html</para>
         /// </summary>
         /// <param name="ax"></param>
         /// <param name="ay"></param>

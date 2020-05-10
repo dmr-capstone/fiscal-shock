@@ -120,7 +120,6 @@ public class InGameMenu : MonoBehaviour {
     /// Dynamic adjustment of the mouse sensitivity value based on the slider
     /// adjustment
     /// </summary>
-    /// <value></value>
     public float mouseSensitivity {
         get => Settings.mouseSensitivity;
         set => Settings.mouseSensitivity = value;
@@ -185,11 +184,7 @@ public class InGameMenu : MonoBehaviour {
         }
         // Was the game already paused or is the background image up, implying the game should be paused, but it's running and the menu is up?
         if (Input.GetKeyDown(Settings.pauseKey) && (Time.timeScale == 0 || background.activeSelf)) {
-            disableAllPanels();
-            pauseText.text = "";
-            Time.timeScale = 1;
-            Settings.forceLockCursorState();
-            StateManager.pauseAvailable = true;
+            PlayClick();
             return;
         }
         // Hide pause menus for screenshots
@@ -222,6 +217,7 @@ public class InGameMenu : MonoBehaviour {
         disableAllPanels();
         Time.timeScale = 1;
         pauseText.text = "";
+        StateManager.pauseAvailable = true;
     }
 
     /// <summary>

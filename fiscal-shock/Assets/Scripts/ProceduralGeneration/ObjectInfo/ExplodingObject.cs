@@ -88,8 +88,7 @@ public class ExplodingObject : MonoBehaviour {
             if (layerHit == ENEMY) {
                 EnemyHealth eh = hit.gameObject.GetComponentInChildren<EnemyHealth>();
                 if (eh != null) {
-                    hit.attachedRigidbody.isKinematic = false;
-                    hit.attachedRigidbody.AddExplosionForce(randomizedDamage*10, transform.position + Vector3.up, explosionRadius, 3f);
+                    eh.addImpact(hit.gameObject.transform.position - transform.position, randomizedDamage * 2f);
                     eh?.takeDamage(randomizedDamage);
                     eh?.showDamageExplosion(null, 0f);
                     eh?.stun(3f);

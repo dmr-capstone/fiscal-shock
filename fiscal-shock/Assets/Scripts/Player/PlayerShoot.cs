@@ -38,13 +38,11 @@ public class PlayerShoot : MonoBehaviour {
     /// <summary>
     /// Current weapon.
     /// </summary>
-    /// <value></value>
     public GameObject weapon { get; private set; }
 
     /// <summary>
     /// Reference to the HUD crosshair, so it can be hidden or shown.
     /// </summary>
-    /// <value></value>
     public Image crossHair { get; private set; }
 
     /// <summary>

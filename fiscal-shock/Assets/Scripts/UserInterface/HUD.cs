@@ -34,20 +34,17 @@ public class HUD : MonoBehaviour
     /// Reference the player's transform, so the player's position can be
     /// used to determine the compass bearing
     /// </summary>
-    /// <value></value>
     public Transform playerTransform { get; set; }
 
     /// <summary>
     /// Reference to the escape portal's transform, so the position can
     /// be used to determine the compass bearing
     /// </summary>
-    /// <value></value>
     public Transform escapeHatch { get; set; }
 
     /// <summary>
     /// Singleton management
     /// </summary>
-    /// <value></value>
     public static HUD hudInstance { get; private set; }
 
     /// <summary>

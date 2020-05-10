@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace FiscalShock.Graphs {
     /// <summary>
-    /// Base class for all graphs
+    /// Base class for all graphs.
     /// </summary>
     public class Graph {
         public List<Vertex> vertices { get; protected set; } = new List<Vertex>();
@@ -56,7 +56,7 @@ namespace FiscalShock.Graphs {
         /// <summary>
         /// Find spanning tree using breadth-first search. Results in spanning trees with a "central" vertex that connects to many others, and then dead-ends as you get farther away from it.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>list of edges in the spanning tree</returns>
         public List<Edge> findSpanningTreeBFS() {
             if (vertices.Count < 2 || edges.Count < 1) {
                 return null;

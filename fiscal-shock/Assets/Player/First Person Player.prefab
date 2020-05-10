@@ -147,7 +147,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pointPrefab: {fileID: 3024218742173863289, guid: 6661f652006d0b97190e1a60269e5c2f,
     type: 3}
-  renderDelaunay: 1
+  renderDelaunay: 0
   renderDelaunayVertices: 0
   renderDelaunayHull: 0
   delaunayColor: {r: 1, g: 0, b: 0.9359112, a: 0}
@@ -166,7 +166,7 @@ MonoBehaviour:
   roomColor: {r: 1, g: 1, b: 1, a: 1}
   roomRenderHeight: 3
   edgeMat: {fileID: 2100000, guid: 4c59fd6ae625a9500b147fcf863adeb3, type: 2}
-  renderNavigableDelaunay: 1
+  renderNavigableDelaunay: 0
   navigableDelaunayColor: {r: 240, g: 209, b: 251, a: 1}
   navigableDelaunayHeight: 19.5
 --- !u!1 &208130074868200894

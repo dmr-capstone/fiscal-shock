@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using FiscalShock.Procedural;
-using System;
+using FiscalShock.AI;
 
 /// <summary>
 /// Manages AI health and reactions to being damaged.
@@ -40,7 +40,7 @@ public class EnemyHealth : MonoBehaviour {
     /// <summary>
     /// Queue for object pooling
     /// </summary>
-    private Queue<GameObject> explosions = new Queue<GameObject>();
+    public Queue<GameObject> explosions = new Queue<GameObject>();
 
     /// <summary>
     /// Number of explosions to pool to avoid garbage collection spikes
@@ -50,7 +50,7 @@ public class EnemyHealth : MonoBehaviour {
     /// <summary>
     /// Queue for object pooling
     /// </summary>
-    private Queue<GameObject> bigExplosions = new Queue<GameObject>();
+    public Queue<GameObject> bigExplosions = new Queue<GameObject>();
 
     /// <summary>
     /// Number of explosions to pool to avoid garbage collection spikes
@@ -66,9 +66,17 @@ public class EnemyHealth : MonoBehaviour {
     private FeedbackController feed;
 
     /// <summary>
-    /// Reference to this bot's rigidbody, used for explosives
+    /// Reference to this bot's controller, used for explosives
     /// </summary>
-    private Rigidbody ragdoll;
+    public CharacterController ragdoll { get; set; }
+
+    [Tooltip("Mass, used as part of calculating simulated physics from explosion forces.")]
+    public float mass = 3.0f;
+
+    /// <summary>
+    /// Track the current impact that blew away this bot.
+    /// </summary>
+    private Vector3 impact;
 
     /// <summary>
     /// Counter checked against max enmity duration
@@ -91,7 +99,7 @@ public class EnemyHealth : MonoBehaviour {
     private void Start() {
         feed = GameObject.FindGameObjectWithTag("HUD").GetComponent<FeedbackController>();
         currentHealth = startingHealth;
-        ragdoll = gameObject.GetComponent<Rigidbody>();
+        ragdoll = gameObject.GetComponent<CharacterController>();
 
         for (int i = 0; i < smallExplosionLimit; ++i) {
             GameObject splode = Instantiate(explosion, gameObject.transform.position + transform.up, gameObject.transform.rotation);
@@ -142,12 +150,18 @@ public class EnemyHealth : MonoBehaviour {
         EnemyMovement em = gameObject.GetComponentInChildren<EnemyMovement>();
         es.enabled = false;
         em.stunned = true;
-        yield return new WaitForSeconds(duration);
+
+        // Apply a primitive physics force to simulate being knocked back by the stun
+        // This would be changed from `while` to `if` and moved to the FixedUpdate function if knockbacks should occur while not stunned.
+        while (impact.magnitude > 0.2f) {
+            ragdoll.Move(impact * Time.deltaTime);
+            impact = Vector3.Lerp(impact, Vector3.zero, duration * Time.deltaTime);
+            yield return null;
+        }
 
         em.enabled = true;
         em.stunned = false;
         stunEffect.SetActive(false);
-        ragdoll.isKinematic = true;
 
         yield return null;
     }
@@ -168,7 +182,7 @@ public class EnemyHealth : MonoBehaviour {
         // Process enemy defeat
         if (currentHealth <= 0 && !dead) {
             // Temporary boost to earnings for usability testing as we don't have time to fully adjust enemy stats and it's sometimes very hard to earn cash
-            float temporaryBonusMod = Gaussian.next(1.6f, 0.5f);
+            float temporaryBonusMod = Gaussian.next(1.2f, 0.5f);
             // Get up to half the original health as payback, adjusted due to fish cannon scoring too much cash because it OHKOs right now
             float profit = (pointValue + Mathf.Clamp(prevHealth, 1, startingHealth * paybackMultiplier)) * temporaryBonusMod;
             StateManager.cashOnHand += profit;
@@ -238,28 +252,18 @@ public class EnemyHealth : MonoBehaviour {
     }
 
     /// <summary>
-    /// Handle collision events. Only player bullets and missiles are accounted
-    /// for, so enemies currently can't hurt each other.
+    /// Creates a knockback impact force on this bot. Currently,
+    /// the impact force's effect is only simulated while stunned.
     /// </summary>
-    /// <param name="col">collision event data</param>
-    private void OnCollisionEnter(Collision col) {
-        if (col.gameObject.tag == "Bullet" || col.gameObject.tag == "Missile") {
-            if (col.gameObject == lastBulletCollision) {
-                return;
-            }
-            lastBulletCollision = col.gameObject;
-
-            // Reduce health
-            BulletBehavior bullet = col.gameObject.GetComponent<BulletBehavior>();
-            if (bullet == null) {  // try checking parents
-                bullet = col.gameObject.GetComponentInParent<BulletBehavior>();
-            }
-            takeDamage(bullet.damage, 1);
-            if (col.gameObject.tag == "Bullet") {
-                showDamageExplosion(explosions, 0.4f);
-            } else if (col.gameObject.tag == "Missile") {
-                showDamageExplosion(bigExplosions, 0.65f);
-            }
+    /// <param name="direction">direction to be blown away to</param>
+    /// <param name="force">amount of force applied</param>
+    public void addImpact(Vector3 direction, float force) {
+        direction.Normalize();
+        if (direction.y < 0) {
+            direction.y = -direction.y;
+        } else {
+            direction.y = 1f;
         }
+        impact += direction.normalized * force / mass;
     }
 }

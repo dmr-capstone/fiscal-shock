@@ -8,10 +8,10 @@ using FiscalShock.AI;
 using FiscalShock.Pathfinding;
 using FiscalShock.GUI;
 
-/// <summary>
-/// Generates a dungeon floor
-/// </summary>
 namespace FiscalShock.Procedural {
+    /// <summary>
+    /// Generates a dungeon floor based on the selected DungeonType parameters.
+    /// </summary>
     public class Dungeoneer : MonoBehaviour {
         [Tooltip("Reference to player prefab so it can be spawned somewhere in the level.")]
         public GameObject playerPrefab;
@@ -45,7 +45,6 @@ namespace FiscalShock.Procedural {
         public MersenneTwister mt { get; private set; }
         public MovementTrigger cellTrigger { get; private set; }
 
-
         /* Graphs */
         public Delaunay dt { get; private set; }
         public Voronoi vd { get; private set; }
@@ -71,6 +70,9 @@ namespace FiscalShock.Procedural {
         /* Because script execution order is a *****. */
         private Vertex dcSpawnPoint;
 
+        /// <summary>
+        /// Initialization and execution of procedural algorithm.
+        /// </summary>
         public void Start() {
             Settings.loadSettings();
             Debug.Log($"Starting to load");
@@ -82,7 +84,7 @@ namespace FiscalShock.Procedural {
             // and pick randomly later
             currentDungeonType = dungeonThemes
                 .Where(d => d.typeEnum == StateManager.selectedDungeon)
-                // .Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
+                //.Where(d => d.typeEnum == DungeonTypeEnum.Mine)  // uncomment to go straight to mines when testing dungeon scene
                 .Select(d => d.gameObject)
                 .First()
                 .GetComponent<DungeonType>();
@@ -105,6 +107,9 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Finished spawning stuff in {sw.ElapsedMilliseconds} ms");
         }
 
+        /// <summary>
+        /// Initialize the pseudorandom number generators that will be used.
+        /// </summary>
         public void initPRNG() {
             // Set up the PRNG
             if (seed == 0) {
@@ -115,6 +120,12 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Using seed {seed}");
         }
 
+        /// <summary>
+        /// Create a new, random Delaunay triangulation. The points on the
+        /// Delaunay are found using a Poisson disc sampling algorithm.
+        /// The Delaunay is used by the A* search of the Debt Collector, and
+        /// also to create the Voronoi.
+        /// </summary>
         public void generateDelaunay() {
             Debug.Log("Generating Delaunay");
             Poisson dist = new Poisson(currentDungeonType.minimumPoissonDistance, currentDungeonType.width, currentDungeonType.height);
@@ -122,12 +133,27 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Generated Delaunay with {dt.vertices.Count} vertices.");
         }
 
+        /// <summary>
+        /// Generates the dual of the Delaunay triangulation, a Voronoi diagram.
+        /// The Voronoi is used for the placement of environmental objects.
+        /// </summary>
         public void generateVoronoi() {
             Debug.Log("Generating Voronoi");
             vd = dt.makeVoronoi();
             Debug.Log($"Generated Voronoi with {vd.vertices.Count} vertices.");
         }
 
+        /// <summary>
+        /// Determine the Mystery Dungeon-esque "rooms" and size them up as
+        /// configured by the DungeonType. Works by picking a set of points
+        /// on the Delaunay triangulation at random that are a given distance
+        /// away from each other, known as the "master Delaunay points." Then,
+        /// the Delaunay triangulation of those points is found. From this
+        /// secondary DT, a supergraph of a spanning tree is used to determine
+        /// where corridors should exist. Additionally, rooms are created, which
+        /// consist of a "seed point" (the master DT point) and a number of
+        /// surrounding Voronoi cells.
+        /// </summary>
         public void generateRoomGraphs() {
             Debug.Log("Generating room graphs");
             // pick how many rooms to make
@@ -199,6 +225,9 @@ namespace FiscalShock.Procedural {
             validCells = getValidCells();
         }
 
+        /// <summary>
+        /// Do all the stuff to make a dungeon
+        /// </summary>
         private void setDungeon() {
             organizer = new GameObject();
             organizer.name = "Dungeon Parts";
@@ -246,7 +275,7 @@ namespace FiscalShock.Procedural {
             Debug.Log($"Placing portals took {sw.ElapsedMilliseconds} ms");
             sw.Reset();
 
-            if (spawnEnemiesDebug) {
+            if (spawnEnemiesDebug || !StateManager.startedFromDungeon) {
                 Debug.Log("Starting enemy placement");
                 sw.Start();
                 spawnEnemies();
@@ -398,10 +427,10 @@ namespace FiscalShock.Procedural {
         }
 
         private GameObject spawnEnemy(List<SpawnableEnemy> spawnables, Cell location) {
-            return spawnFromList(spawnables.Cast<SpawnableObject>().ToList(), location);
+            return spawnFromList(spawnables.Cast<SpawnableObject>().ToList(), location, currentDungeonType.wallHeight * 0.8f);
         }
 
-        private GameObject spawnFromList(List<SpawnableObject> spawnables, Cell location) {
+        private GameObject spawnFromList(List<SpawnableObject> spawnables, Cell location, float heightToSpawn = 0) {
             // Select random index
             int idx;
             float chance;
@@ -415,7 +444,7 @@ namespace FiscalShock.Procedural {
             GameObject thingToSpawn = spawnables[idx].prefab;
 
             // Place it at the correct point
-            Vector3 where = location.site.toVector3AtHeight(thingToSpawn.transform.position.y);
+            Vector3 where = location.site.toVector3AtHeight(heightToSpawn == 0 ? thingToSpawn.transform.position.y : heightToSpawn);
 
             GameObject thing = Instantiate(thingToSpawn, where, thingToSpawn.transform.rotation);
             thing.name = $"{thingToSpawn.name} @ {location.site.id}";
@@ -446,13 +475,15 @@ namespace FiscalShock.Procedural {
             Debug.Log("Spawning player");
 
             Vertex spawnPoint;
-            do {  // Don't spawn the player on portals. Warning: infinite loop if there are only 1-2 cells
+            do {  // Don't spawn the player on portals. Warning: infinite loop if there are only 1-2 cells!
                 spawnPoint = masterDt.vertices[mt.Next(masterDt.vertices.Count-1)];
             } while (spawnPoint.cell.hasPortal);
+            // Please use the spawn point instead of teleporting the player manually
             SpawnPoint spawner = GameObject.FindGameObjectWithTag("Spawn Point").GetComponent<SpawnPoint>();
             spawner.transform.position = spawnPoint.toVector3AtHeight(currentDungeonType.wallHeight * 0.8f);
             player = spawner.spawnPlayer();
 
+            // Set the player's original spawn point.
             PlayerMovement pmScript = player.GetComponent<PlayerMovement>();
             pmScript.originalSpawn = spawnPoint;
 
@@ -487,12 +518,15 @@ namespace FiscalShock.Procedural {
             // Enable temporary player invincibility on spawn
             StartCoroutine(player.GetComponentInChildren<PlayerHealth>().enableIframes(5f));
 
-            Debug.Log(pmScript.originalSpawn.vector);
-
-            // Set the Debt Collector spawn point because ******* script execution order.
+            // Set the Debt Collector spawn point.
+            // (This didn't actually work, but anyone that feels like fixing this will know it wasn't this.)
             debtCollector.GetComponentInChildren<DebtCollectorMovement>().spawnPoint = dcSpawnPoint;
         }
 
+        /// <summary>
+        /// Use the prefab containing the MovementTrigger to create trigger zones that will
+        /// update the current cell of the player and debt collector.
+        /// </summary>
         private void setPlayerCollisions() {
             foreach (Vertex vertex in navigableDelaunay.vertices) {
                 if (vertex.cell.isClosed) {
@@ -506,11 +540,13 @@ namespace FiscalShock.Procedural {
                             bbox.maxX - width / 2, 1, bbox.maxY - height / 2
                         );
 
+                        // Create and size the trigger zone.
                         GameObject triggerContainer = Instantiate(triggerPrefab, bboxCenter, triggerPrefab.transform.rotation);
                         triggerContainer.transform.localScale = new Vector3(bbox.maxX - bbox.minX, 1, bbox.maxY-bbox.minY);
                         triggerContainer.name = $"Trigger for Cell {vertex.cell.id}";
                         triggerContainer.transform.parent = cellColliderOrganizer.transform;
 
+                        // Set the cell that this trigger zone belongs to.
                         cellTrigger = triggerContainer.GetComponent<MovementTrigger>();
                         cellTrigger.cellSite = vertex;
                     }
@@ -518,14 +554,19 @@ namespace FiscalShock.Procedural {
             }
         }
 
+        /// <summary>
+        /// Place the debt collector in the scene.
+        /// </summary>
         private void spawnDebtCollector() {
+            // The available points at which the debt collector can spawn.
             List<Vertex> spawnPoints = navigableDelaunay.vertices;
 
             Vertex spawnPoint;
-            do {
+            do { // Don't spawn over a portal.
                 spawnPoint = spawnPoints[mt.Next(spawnPoints.Count - 1)];
             } while (spawnPoint.cell.hasPortal);
 
+            // Find or instantiate the debt collector and save this point as its spawn point.
             debtCollector = GameObject.FindGameObjectWithTag("Debt Collector");
 
             if (debtCollector == null) {
@@ -536,6 +577,11 @@ namespace FiscalShock.Procedural {
             dcSpawnPoint = spawnPoint;
         }
 
+        /// <summary>
+        /// Helper function to check if a point is on or near the convex hull
+        /// of the DT. WARNING: Convex hull algorithm doesn't work right.
+        /// </summary>
+        /// <param name="point">point to check</param>
         private bool isPointOnOrNearConvexHull(Vertex point) {
             return
                 dt.convexHull.Contains(point) || point.neighborhood.Intersect(dt.convexHull).ToList().Count > 0

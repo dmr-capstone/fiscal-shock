@@ -25,21 +25,37 @@ namespace FiscalShock.Graphs {
         public List<Edge> incidentEdges { get; set; } = new List<Edge>();
 
         // PATHFINDING ONLY
-        internal bool isOnWall { get; set; } = false;
-        internal bool walkable { get; set; } = false;
+        /// <summary>
+        /// Whether or not this vertex is usable in pathfinding.
+        /// </summary>
         internal bool toIgnore { get; set; } = false;
 
         /* Begin overloaded constructors */
+        /// <summary>
+        /// Create a vertex from float coordinates
+        /// </summary>
         public Vertex(float xX, float yY) {
             vector = new Vector2(xX, yY);
         }
 
+        /// <summary>
+        /// Create a vertex from float coordinates and assign an ID
+        /// </summary>
         public Vertex(float xX, float yY, int vid) : this(xX, yY) {
             id = vid;
         }
 
+        /// <summary>
+        /// Create vertex from double coordinates and cast the doubles to
+        /// floats
+        /// </summary>
         public Vertex(double xX, double yY) : this((float)xX, (float)yY) {}
 
+        /// <summary>
+        /// Create vertex from an array of doubles
+        /// </summary>
+        /// <param name="xy">2-element array in the form of [x, y]</param>
+        /// <returns></returns>
         public Vertex(double[] xy) : this(xy[0], xy[1]) {
             if (xy.Length > 2) {
                 Debug.LogError($"FATAL: Input array held more than two coordinates.");
@@ -49,6 +65,11 @@ namespace FiscalShock.Graphs {
         /* End overloaded constructors */
 
         /* Comparator functions - needed for LINQ */
+        /// <summary>
+        /// Check equality based on the backing Vector2
+        /// </summary>
+        /// <param name="obj">other object to compare to</param>
+        /// <returns>equality</returns>
         public override bool Equals(object obj) {
             if (obj is Vertex other) {
                 return vector == other.vector;
@@ -78,7 +99,8 @@ namespace FiscalShock.Graphs {
         }
 
         /// <summary>
-        /// Given a list of vertices and an origin vertex, find the nearest one (via Euclidean distance).
+        /// Given a list of vertices and an origin vertex, find the nearest one
+        /// (via Euclidean distance).
         /// </summary>
         /// <param name="others"></param>
         /// <returns></returns>
