@@ -13,11 +13,13 @@ A valid `Unity_v2019.x.ulf.enc` file is **required** to run automated tests or c
 
 ## Updating Travis
 1. Review the instructions in the link above. These were the main guide to setting up CI/CD.
-1. Disable any unwanted stages or tasks in `.travis.yml`.
+1. Disable any unwanted tasks in `.travis.yml`.
 1. Generate a new `Unity_v2019.x.ulf` file by following the steps [here](https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/tree/master#b-locally), using the 2019.3 Docker image and your own Unity credentials.
 1. Encrypt your newly-created `Unity_v2019.x.ulf` into `Unity_v2019.x.ulf.enc` with Travis using the steps [here](https://docs.travis-ci.com/user/encrypting-files/). The `.ulf.enc` file must exist in the root directory of the repo.
-1. Log in to your Travis CI and check the settings for your copy of the repository. You should see two new environment variables: `encrypted_[HEX_STRING]_iv` and `encrypted_[HEX_STRING]_key`. The hex string is different each time you encrypt a file. You need to update `.travis.yml` to use the new hex string in your copy of the repository.
-1. Push your updates to the `.ulf.enc` and `.travis.yml` file.
+1. Log in to your Travis CI and check the settings for your copy of the repository. You should see two new environment variables: `encrypted_[HEX_STRING]_iv` and `encrypted_[HEX_STRING]_key`. The hex string is different each time you encrypt a file. You need to update `ci/travis_prepare_workspace.sh` to use the new hex string in your copy of the repository.
+1. You also need to update the Travis scripts to download and import the asset unitypackage, rather than pulling the LFS files.
+    - [This](https://docs.unity3d.com/Manual/CommandLineArguments.html) and some other internet research should put you on the right path.
+1. Push your updates to the `.ulf.enc`, Travis configuration, and scripts.
 1. Wait for a build.
 
 ## Travis Auto-Tagging
