@@ -1,0 +1,26 @@
+
+.. _namespace_FiscalShock__Pathfinding:
+
+Namespace FiscalShock::Pathfinding
+==================================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classFiscalShock_1_1Pathfinding_1_1AStar`
+
+- :ref:`exhale_class_classFiscalShock_1_1Pathfinding_1_1Hivemind`
+
+- :ref:`exhale_class_classFiscalShock_1_1Pathfinding_1_1MovementTrigger`
+
+- :ref:`exhale_class_classFiscalShock_1_1Pathfinding_1_1VertexNode`

@@ -1,0 +1,36 @@
+
+.. _file_fiscal-shock_Assets_Scripts_Player_DungeonSelection.cs:
+
+File DungeonSelection.cs
+========================
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``fiscal-shock/Assets/Scripts/Player/DungeonSelection.cs``)
+-----------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_FiscalShock__GUI`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classFiscalShock_1_1GUI_1_1DungeonSelection`
+

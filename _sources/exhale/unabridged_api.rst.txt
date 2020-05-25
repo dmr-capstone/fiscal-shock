@@ -1,0 +1,600 @@
+
+Full API
+--------
+
+Namespaces
+**********
+
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_FiscalShock.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_FiscalShock__AI.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_FiscalShock__Demo.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_FiscalShock__Graphs.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_FiscalShock__GUI.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_FiscalShock__Pathfinding.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_FiscalShock__Procedural.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_System.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_System__Collections.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_System__Collections__Generic.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_System__Globalization.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_System__IO.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_System__Linq.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_System__Runtime__CompilerServices.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_ThirdParty.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_ThirdParty__Delaunator.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_TMPro.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_UnityEngine.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_UnityEngine__InputSystem.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_UnityEngine__Rendering.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_UnityEngine__SceneManagement.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   namespace_UnityEngine__UI.rst
+
+Classes and Structs
+*******************
+
+
+.. toctree::
+   :maxdepth: 5
+
+   structCreditRating.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   structHomingTargets.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   structQualityPreset.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classAnimationCategory.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classAnimationManager.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classBulletBehavior.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classCheats.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classCreditor.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classCreditorData.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classCreditRatingGUI.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classDefaultQualitySettings.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classDefaultState.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classDungeonTutorial.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classEnemyHealth.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classEnemyShoot.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classExplodingObject.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classExplosion.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFeedbackController.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1AI_1_1DebtCollectorMovement.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1AI_1_1EnemyMovement.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Demo_1_1ProceduralMeshRenderer.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1Cell.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1Delaunay.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1Edge.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1Graph.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1Mathy.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1Polygon.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1Triangle.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1Vertex.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1Voronoi.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Graphs_1_1VoronoiRoom.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1GUI_1_1DungeonSelection.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1GUI_1_1Inventory.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1GUI_1_1PlayerInventorySlot.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Pathfinding_1_1AStar.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Pathfinding_1_1Hivemind.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Pathfinding_1_1MovementTrigger.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Pathfinding_1_1VertexNode.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1Delve.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1Dungeoneer.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1DungeonType.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1DungeonTypeData.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1Edgewise.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1Escape.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1Floor.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1Gaussian.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1KillZone.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1ObjectInfo.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1Poisson.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1Portals.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1WallInfo.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1Walls.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classFiscalShock_1_1Procedural_1_1WeaponGenerator.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classGraphicsWidgets.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classHUD.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classInGameMenu.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classInputFieldEvents.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classIntroStory.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classLoadingScreen.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classLoan.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classLoanEntry.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classLoseMenu.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classMainMenu.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classMouseLook.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classPlayerFiringState.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classPlayerHealth.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classPlayerMovement.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classPlayerShoot.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classPlayerSingleton.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classProjectileCombination.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classRandomWeapon.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classSeamlessMusicPlayer.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classSettings.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classSettingsValues.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classShopInventorySlot.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classShopScript.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classSign.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classSpawnableEnemy.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classSpawnableObject.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classSpawnPoint.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classStateManager.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classTargetBehavior.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classThirdParty_1_1Delaunator_1_1ListExtensions.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classThirdParty_1_1Delaunator_1_1Triangulation.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classThirdParty_1_1MersenneTwister.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classUtils.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classValidLoan.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classVolumeController.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classWeaponStats.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   classWinScreen.rst
+
+Enums
+*****
+
+
+.. toctree::
+   :maxdepth: 5
+
+   enum_AnimationManager_8cs_1a2c62c8325defaa3537c7de457e51d9e9.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   enum_StateManager_8cs_1a85b5d3c8a7ff99f7195c8c75a359d277.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   enum_WeaponStats_8cs_1a6632920782fdcfb50d09c28a324a5042.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   enum_StateManager_8cs_1a66200156421a053a37d5351369f606aa.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   enum_WeaponStats_8cs_1a7af6aebb429588b2abecb84a3c01625e.rst

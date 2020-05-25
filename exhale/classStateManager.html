@@ -1,0 +1,463 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Class StateManager &mdash; Fiscal Shock  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Fiscal Shock
+          
+
+          
+            
+            <img src="../_static/dmr-icon128.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Class StateManager</a><ul>
+<li><a class="reference internal" href="#class-documentation">Class Documentation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Fiscal Shock</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Class StateManager</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/exhale/classStateManager.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="class-statemanager">
+<span id="exhale-class-classstatemanager"></span><h1>Class StateManager<a class="headerlink" href="#class-statemanager" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p>Defined in <a class="reference internal" href="file_fiscal-shock_Assets_Scripts_Finance_StateManager.cs.html#file-fiscal-shock-assets-scripts-finance-statemanager-cs"><span class="std std-ref">File StateManager.cs</span></a></p></li>
+</ul>
+<div class="section" id="class-documentation">
+<h2>Class Documentation<a class="headerlink" href="#class-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="_CPPv412StateManager">
+<span id="_CPPv312StateManager"></span><span id="_CPPv212StateManager"></span><span id="StateManager"></span><span class="target" id="classStateManager"></span><em class="property">class </em><code class="sig-name descname">StateManager</code><a class="headerlink" href="#_CPPv412StateManager" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Represents a play session. Consider this the player’s “save data.” Save games could be implemented by serializing this to JSON (may require a separate backing data class with no methods). </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Property</p>
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1afb41494513b31925fd4ecabc948f12e6"></span><em class="property">property </em><code class="sig-name descname">StateManager::cashOnHand</code></dt>
+<dd><p>Current cash on hand. Cash on hand is the player’s health and ammo. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a79b5ed731e2ece1866d17ce45a4a645d"></span><em class="property">property </em><code class="sig-name descname">StateManager::nextID</code></dt>
+<dd><p>Next available loan ID. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a7563889eb8e55b675662fa9e0e89f945"></span><em class="property">property </em><code class="sig-name descname">StateManager::timesEntered</code></dt>
+<dd><p>Number of times the player has entered the dungeon. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1aab490e67d0af8336bc0aef9d0deb8d6c"></span><em class="property">property </em><code class="sig-name descname">StateManager::totalFloorsVisited</code></dt>
+<dd><p>Number of floors the player has visited inside the dungeon. A low ratio of timesEntered : totalFloorsVisited implies a more successful player, as they were able to go deeper in the dungeon. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a8d8f3b4a1dc8e278041a5c677043cd89"></span><em class="property">property </em><code class="sig-name descname">StateManager::currentFloor</code></dt>
+<dd><p>Current dungeon floor the player is on. Used for difficulty scaling. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a73f63f6b9e1d690c5eda786a17661736"></span><em class="property">property </em><code class="sig-name descname">StateManager::scoreChangeFactor</code></dt>
+<dd><p>Used for calculating credit score. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a926330d1cf832415413293f4d0b90825"></span><em class="property">property </em><code class="sig-name descname">StateManager::creditScore</code></dt>
+<dd><p>Current credit score of the player. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a29948d1ff03e6e84e7c28ed3f254c702"></span><em class="property">property </em><code class="sig-name descname">StateManager::paymentStreak</code></dt>
+<dd><p>Number of days in a row that the player has made regular payments on all of their active loans. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a766f4b5e8e9e67ae4e2054817d903067"></span><em class="property">property </em><code class="sig-name descname">StateManager::cashOnEntrance</code></dt>
+<dd><p>Amount of money the player had before entering the dungeon. Used to calculate income. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1ab80f3e46e6ee4368d691c3da284bf0cd"></span><em class="property">property </em><code class="sig-name descname">StateManager::selectedDungeon</code></dt>
+<dd><p>Currently selected dungeon type. Used by the dungeon generator. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt>
+<span class="target" id="classStateManager_1ac894dc5d631c1c731bb5744120e559f2"></span><code class="sig-name descname">static IEnumerator StateManager.makePauseAvailableAgain()</code></dt>
+<dd><p>Hitting “esc” to exit GUIs sometimes hits the pause code too, depending on order of execution. Bad things happen when the pause menu has a different order of execution. So, this is the nicest way to avoid bringing up the pause menu when someone exits a shop via keyboard. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="classStateManager_1a848efb9621f70ad52443c995f51f2937"></span><code class="sig-name descname">static void StateManager.startNewDay()</code></dt>
+<dd><p>Calls creditor functions to accumulate interest and gets income earned from the last dungeon dive. </p>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p></p>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="classStateManager_1aa40c6b75570312220b8402ec436aef57"></span><code class="sig-name descname">static void StateManager.calcCreditScore()</code></dt>
+<dd><p>Calculates the player’s credit score. Used to apply bonuses/penalties to interest rates and maximum loans </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="classStateManager_1a63d20be62e4433b48f866e05a3d6c4da"></span><code class="sig-name descname">static void StateManager.resetToDefaultState()</code></dt>
+<dd><p>Resets the <a class="reference internal" href="#classStateManager"><span class="std std-ref">StateManager</span></a> to the default state. Use this when the player’s session needs to be reset. The StateManger is set up for a “fresh” playthrough. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="classStateManager_1ae9bb7d14b30e06930ebe25cfafcde3e5"></span><code class="sig-name descname">static void StateManager.destroyAllSingletons()</code></dt>
+<dd><p>Destroy all singletons the state manager is keeping track of. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Attributes</p>
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1afdaed3a58aa3e111e04b75b21d5da1e3"></span><code class="sig-name descname">List&lt;Loan&gt; StateManager.loanList = new List&lt;Loan&gt;()</code></dt>
+<dd><p>All active loans the player owes money on. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a94942436b1105c9b3f45304a82ddd030"></span><code class="sig-name descname">List&lt;float&gt; StateManager.income = new List&lt;float&gt;()</code></dt>
+<dd><p>Amount of money the player has earned in the dungeon each day. Factored into credit score. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a21eca8ec7186d58c7480c0ef03742c18"></span><code class="sig-name descname">Dictionary&lt;string, CreditorData&gt; StateManager.lenders = new Dictionary&lt;string, CreditorData&gt;()</code></dt>
+<dd><p>List of creditor IDs, so state manager can handle processing of due amounts. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a6880da16b5bc311e2539dac432dd95bf"></span><code class="sig-name descname">float StateManager.totalDebt =&gt; loanList.Sum(l =&gt; l.total)</code></dt>
+<dd><p>Total amount due to all creditors. This value is displayed on the <a class="reference internal" href="classHUD.html#classHUD"><span class="std std-ref">HUD</span></a>. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a60f287578006881001e3f170243e073c"></span><code class="sig-name descname">int StateManager.totalLoans =&gt; loanList.Count</code></dt>
+<dd><p>Total active loans. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1ad4c2ed0f11c18d792a958948a674b72c"></span><code class="sig-name descname">float StateManager.averageIncome =&gt; income.Average()</code></dt>
+<dd><p>Average income earned across all trips into the dungeon. Used to calculate credit score. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a14974da3b1ff7169b9a80923fb7d9be5"></span><code class="sig-name descname">float StateManager.rateAdjuster = DefaultState.rateAdjuster</code></dt>
+<dd><p>Interest rate modifier. Affected by credit rating. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a10b759bcdfd8675dc0aa775cbb28e8be"></span><code class="sig-name descname">float StateManager.maxLoanAdjuster = DefaultState.maxLoanAdjuster</code></dt>
+<dd><p>Maximum loan amount modifier. Affected by credit rating. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1ad968a841cb65e3a754e4d79954c61b88"></span><code class="sig-name descname">bool StateManager.sawEntryTutorial = DefaultState.sawEntryTutorial</code></dt>
+<dd><p>Whether the player has already see the dungeon entry tutorial explaining the portals (arrows) in the dungeon. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a344a88a71be46ab7bae1896b829c5460"></span><code class="sig-name descname">bool StateManager.inStoryTutorial = DefaultState.inStoryTutorial</code></dt>
+<dd><p>Whether the player is currently in the story tutorial. The player should not spend any money while in the tutorial. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1ad1c82c721e3786520d9bca4544e01a48"></span><code class="sig-name descname">List&lt;GameObject&gt; StateManager.singletons = new List&lt;GameObject&gt;()</code></dt>
+<dd><p>List of singletons that the state manager is tracking. These objects will be destroyed when the state manager is reset to default. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a731717ab5c957578f9c9db77189c5dbf"></span><code class="sig-name descname">bool StateManager.pauseAvailable = DefaultState.pauseAvailable</code></dt>
+<dd><p>Whether the player can pause right now. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a38d689bfbe75fcbb3e426d6ed302d062"></span><code class="sig-name descname">bool StateManager.playerDead = DefaultState.playerDead</code></dt>
+<dd><p>Whether the player’s cash on hand has dropped below 0 in a dungeon. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1aae95b46abdb932a8ad2d4853188de02c"></span><code class="sig-name descname">bool StateManager.playerWon = DefaultState.playerWon</code></dt>
+<dd><p>Whether the player has won the game and transitioning to or viewing the win screen. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1adcc2204900c0a0e7767077a1ee12d701"></span><code class="sig-name descname">bool StateManager.startedFromDungeon = DefaultState.startedFromDungeon</code></dt>
+<dd><p>Whether the player started from the dungeon scene. This is only true if a developer launches the Dungeon scene directly while inside the editor, or if a special build of the game is made. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a2baf82e703884ecd84e2a5d9c0845458"></span><code class="sig-name descname">float StateManager.lastCreditScore = 0</code></dt>
+<dd><p>The last credit score the player had. Used to show the change in credit score from the last. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1adf828492825dfcbaab4deb9ea4d5b675"></span><code class="sig-name descname">CreditRatingGUI StateManager.creditBarScript</code></dt>
+<dd><p>Reference to the script that handles display of the credit score bar. </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a05be2537c864bb6aa86701d9330aa2ee"></span><code class="sig-name descname">CreditRating StateManager.AbysmalCredit = new CreditRating {        min = 300,        max = 350,        rating = &quot;Abysmal&quot;,        rateModifier = 2.0f,        loanModifier = 0.5f    }</code></dt>
+<dd><p>Values associated with the Abysmal credit rating </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a381d499a71a54b9ac6995afa38875757"></span><code class="sig-name descname">CreditRating StateManager.PoorCredit = new CreditRating {        min = 350,        max = 450,        rating = &quot;Poor&quot;,        rateModifier = 1.5f,        loanModifier = 0.75f    }</code></dt>
+<dd><p>Values associated with the Poor credit rating </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1aef3d221bcf8fe4376fcb904f257b3961"></span><code class="sig-name descname">CreditRating StateManager.FairCredit = new CreditRating {        min = 450,        max = 550,        rating = &quot;Fair&quot;,        rateModifier = 1f,        loanModifier = 1f    }</code></dt>
+<dd><p>Values assocaited with the Fair credit rating </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a9a2fc071c896635a94302b3bf5001258"></span><code class="sig-name descname">CreditRating StateManager.GoodCredit = new CreditRating {        min = 550,        max = 650,        rating = &quot;Good&quot;,        rateModifier = 0.9f,        loanModifier = 1.2f    }</code></dt>
+<dd><p>Values associated with the Good credit rating </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a0fb4e3a325a366d4a9996d28a604143e"></span><code class="sig-name descname">CreditRating StateManager.ExcellentCredit = new CreditRating {        min = 650,        max = 850,        rating = &quot;Excellent&quot;,        rateModifier = 0.75f,        loanModifier = 1.6f    }</code></dt>
+<dd><p>Values associated with the Excellent credit rating </p>
+</dd></dl>
+
+<dl class="member">
+<dt>
+<span class="target" id="classStateManager_1a031b75ee28ec2c2d4ed916d18592cfbe"></span><code class="sig-name descname">CreditRating StateManager.currentRating = FairCredit</code></dt>
+<dd><p>Current player credit rating. Can’t be declared until the <a class="reference internal" href="structCreditRating.html#structCreditRating"><span class="std std-ref">CreditRating</span></a> objects are created. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Private Static Functions</p>
+<dl class="function">
+<dt>
+<span class="target" id="classStateManager_1a3f5a596ebdbc78488f22e813f4d0aa78"></span><code class="sig-name descname">static void StateManager.processDueInvoices()</code></dt>
+<dd><p>Determines if the loans have been paid regularly. There are consequences to falling behind and slight rewards for keeping up with payments. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Download Moar RAM
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

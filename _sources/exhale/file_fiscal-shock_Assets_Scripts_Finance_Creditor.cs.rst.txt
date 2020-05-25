@@ -1,0 +1,44 @@
+
+.. _file_fiscal-shock_Assets_Scripts_Finance_Creditor.cs:
+
+File Creditor.cs
+================
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``fiscal-shock/Assets/Scripts/Finance/Creditor.cs``)
+----------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_System__Globalization`
+
+- :ref:`namespace_TMPro`
+
+- :ref:`namespace_UnityEngine__SceneManagement`
+
+- :ref:`namespace_UnityEngine__UI`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classCreditor`
+
+- :ref:`exhale_class_classLoanEntry`
+

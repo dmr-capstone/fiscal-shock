@@ -1,0 +1,36 @@
+
+.. _file_fiscal-shock_Assets_Scripts_AI_Pathfinding_VertexNode.cs:
+
+File VertexNode.cs
+==================
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``fiscal-shock/Assets/Scripts/AI/Pathfinding/VertexNode.cs``)
+-------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_FiscalShock__Pathfinding`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classFiscalShock_1_1Pathfinding_1_1VertexNode`
+

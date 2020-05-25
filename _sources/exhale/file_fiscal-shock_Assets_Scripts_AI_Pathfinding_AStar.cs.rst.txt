@@ -1,0 +1,36 @@
+
+.. _file_fiscal-shock_Assets_Scripts_AI_Pathfinding_AStar.cs:
+
+File AStar.cs
+=============
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``fiscal-shock/Assets/Scripts/AI/Pathfinding/AStar.cs``)
+--------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_FiscalShock__Pathfinding`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classFiscalShock_1_1Pathfinding_1_1AStar`
+

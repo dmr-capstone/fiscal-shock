@@ -1,0 +1,17 @@
+.. _exhale_class_classFiscalShock_1_1Pathfinding_1_1AStar:
+
+Class AStar
+===========
+
+- Defined in :ref:`file_fiscal-shock_Assets_Scripts_AI_Pathfinding_AStar.cs`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: FiscalShock::Pathfinding::AStar
+   :members:
+   :protected-members:
+   :private-members:
+   :undoc-members:

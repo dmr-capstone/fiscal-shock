@@ -1,0 +1,22 @@
+
+.. _namespace_FiscalShock__AI:
+
+Namespace FiscalShock::AI
+=========================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classFiscalShock_1_1AI_1_1DebtCollectorMovement`
+
+- :ref:`exhale_class_classFiscalShock_1_1AI_1_1EnemyMovement`

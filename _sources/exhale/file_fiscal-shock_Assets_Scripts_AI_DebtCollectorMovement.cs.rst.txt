@@ -1,0 +1,40 @@
+
+.. _file_fiscal-shock_Assets_Scripts_AI_DebtCollectorMovement.cs:
+
+File DebtCollectorMovement.cs
+=============================
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``fiscal-shock/Assets/Scripts/AI/DebtCollectorMovement.cs``)
+------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_FiscalShock__AI`
+
+- :ref:`namespace_System__Collections`
+
+- :ref:`namespace_System__IO`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classFiscalShock_1_1AI_1_1DebtCollectorMovement`
+
